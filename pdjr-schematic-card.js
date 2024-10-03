@@ -11,20 +11,25 @@ class ActiveDrawing extends HTMLElement {
     if (svg_doc && this.myHass) {
       if (this.entityMap) this.entityMap.forEach((props, id) => {
         if (this.myHass.states[id]) {
-          var cl = props.classMap.get(this.myHass.states[id].state);
-          if (props.appliedClass !== cl) {
-            props.elements.forEach((element) => {
-              element.classList.remove(props.appliedClass);
-              element.classList.add(cl);
-            });
-            props.appliedClass = cl;
+          if (props.updateClass) {
+            let cl = props.updateClass.get(this.myHass.states[id].state);
+            if ((cl) && (props.appliedClass !== cl)) {
+              setClass(props.elements, cl, props.appliedClass);
+              props.appliedClass = cl;
+            }
           }
-          if (props.updateText !== undefined) {
-            var text = this.myHass.states[id].state + (this.myHass.states[id]["attributes"]["unit_of_measurement"] || "");
-            this.setText(props.elements, text);
+          if (props.updateText) {
+            let text = this.myHass.states[id].state + (this.myHass.states[id]["attributes"]["unit_of_measurement"] || "");
+            if ((text) && (props.appliedText !== text)) {
+              setText(props.elements, text);
+              props.appliedText = text;
+            }
           }
           if (props.updateAttribute !== undefined) {
-            this.setAttribute(props.elements, props.updateAttribute.name, props.updateAttribute.value, this.myHass.states[id].state);
+            if (props.appliedAttributeState !== this.myHass.states[id].state) {
+              setAttribute(props.elements, props.updateAttribute.name, props.updateAttribute.value, this.myHass.states[id].state);
+              props.appliedAttributeState = this.myHass.states[id].state;
+            }
           }
         }
       });
@@ -44,34 +49,35 @@ class ActiveDrawing extends HTMLElement {
 
     this.entityMap = new Map();
     this.config.groups.filter((group) => !(group.disabled && (group.disabled === true))).forEach((group) => {
+      console.info(`Processing group ${JSON.stringify(group, null, 2)}`);
 
       var classMap = new Map();
-      if (("on_state_change" in group) && ("update_class" in group.on_state_change)) {
-        group.on_state_change.update_class.forEach((state) => {
+      if (("actions" in group) && ("update_class" in group.actions)) {
+        group.actions.update_class.forEach((state) => {
           classMap.set(state.state, state.class);
         });
       }
 
       group.entities.forEach((entity) => {
-        let elems = getElements(entity.elements);
+        let elems = getElements(svg_doc, entity.elements);
         // Apply set_ actions...
-        if ("actions" in group) {
+        if ('actions' in group) {
           if ('set_class' in group.actions) setClass(elems, group.actions.set_class);
           if ('set_text' in group.actions) setText(elems, group.actions.set_text);
           if ('set_attribute' in group.actions) setAttribute(elems, group.actions.set_attribute.name, group.actions.set_attribute.value);
         }
 
         this.entityMap.set(entity.id, {
-          state: null,
-          appliedClass: null,
+          state: undefined,
+          appliedClass: undefined,
           elements: elems,
-          classMap: classMap,
-          updateText: (('actions' in group) && ('update_text' in group.actions))?group.actions.updateText:undefined,
-          updateAttribute: (('actions' in group) && ('update_attribute' in group.actions))?group.actions.updateAttribute:undefined
+          updateClass: (('actions' in group) && ('update_class' in group.actions))?classMap:undefined,
+          updateText: (('actions' in group) && ('update_text' in group.actions))?group.actions.update_text:undefined,
+          updateAttribute: (('actions' in group) && ('update_attribute' in group.actions))?group.actions.update_attribute:undefined
         });
       });
-      
     });
+    console.info(JSON.stringify(this.entityMap, null, 2));
 
     // Set onClick handlers for each entity in a group for actions and more-info dialogue
     this.config.groups.forEach(group => {
@@ -131,63 +137,7 @@ class ActiveDrawing extends HTMLElement {
     this.updateStates();
   }
 
-  /**
-   * Parse a string of element selectors into an array of DOM
-   * elements. The string must contain a space delimited list
-   * of element ids (beginning with a '#') or class ids (beginning
-   * with a '.').
-   * @param elementIdString - space separated list of element ids.
-   * @returns array of selected DOM elems. 
-   */
-  getElements(elementIdString) {
-    return(
-      elementIdString.split(/ /).reduce((a,element) => {
-        var elem;
-        switch (element.charAt(0)) {
-          case '#':
-            if (elem = svg_doc.getElementById(element.slice(1))) a.push(elem);
-            break;
-          case '.':
-            Array.prototype.forEach.call(svg_doc.getElementsByClassName(element.slice(1)), (elem) => { a.push(elem); });
-            break;
-          default:
-            break;
-        }
-        return(a);
-      }, [])
-    )
-  }
 
-  /**
-   * Assign a CSS class to a collection of DOM elements.
-   * @param {*} elements - array of DOM elements.
-   * @param {*} cssClass - class to be assigned.
-   * @returns true on success false if arguments are invalid.
-   */
-  setClass(elements, cssClass) {
-    if ((elements.length > 0) && (cssClass !== undefined)) {
-      elements.forEach((element) => { element.classList.add(cssClass); });
-      return(true);
-    }
-    return(false);
-  }
-
-  setText(elements, text) {
-    if ((elements.length > 0) && (text !== undefined)) {
-      elements.forEach((element) => { element.textContent = text; });
-      return(true);
-    }
-    return(false);
-  }
-
-  setAttribute(elements, attributeName, attributeValue, stateValue = undefined) {
-    if ((elements.length > 0) && (attributeName !== undefined) && (attributeValue !== undefined)) {
-      if (stateValue !== undefined) attributeValue = attributeValue.replace('${state}', stateValue);
-      elements.forEach((element) => { element.setAttribute(attributeName, attributeValue); });
-      return(true);
-    }
-    return(false);
-  }
 
   setConfig(config) {
     if (!config.id) throw new Error("card configuration requires an 'id' attribute");
@@ -249,3 +199,75 @@ class ActiveDrawing extends HTMLElement {
 
 customElements.define('pdjr-schematic-card', ActiveDrawing);
 
+
+
+  /**
+   * Parse a string of element selectors into an array of DOM
+   * elements. The string must contain a space delimited list
+   * of element ids (beginning with a '#') or class ids (beginning
+   * with a '.').
+   * @param elementIdString - space separated list of element ids.
+   * @returns array of selected DOM elems. 
+   */
+  function getElements(svg_doc, elementIdString) {
+    return(
+      elementIdString.split(/ /).reduce((a,element) => {
+        var elem;
+        switch (element.charAt(0)) {
+          case '#':
+            if (elem = svg_doc.getElementById(element.slice(1))) a.push(elem);
+            break;
+          case '.':
+            Array.prototype.forEach.call(svg_doc.getElementsByClassName(element.slice(1)), (elem) => { a.push(elem); });
+            break;
+          default:
+            break;
+        }
+        return(a);
+      }, [])
+    )
+  }
+
+  /**
+   * Assign a CSS class to a collection of DOM elements.
+   * @param {*} elements - array of DOM elements.
+   * @param {*} cssClass - class to be assigned.
+   * @returns true on success false if arguments are invalid.
+   */
+  function setClass(elements, add, remove = undefined) {
+    console.info(`setClass(${add}, ${remove})...`);
+    if (elements.length > 0) {
+      elements.forEach((element) => {
+        console.info(`Updating class on ${element.id}: remove class ${remove}, add class ${add}`);
+        if (remove !== undefined) element.classList.remove(remove);
+        element.classList.add(add);
+      });
+      return(true);
+    }
+    return(false);
+  }
+
+  function setText(elements, text) {
+    console.info(`setText(${text})...`);
+    if ((elements.length > 0) && (text !== undefined)) {
+      elements.forEach((element) => {
+        console.info(`Updating text on ${element.id}: ${text}`);
+        element.textContent = text;
+      });
+      return(true);
+    }
+    return(false);
+  }
+
+function setAttribute(elements, attributeName, attributeValue, stateValue = undefined) {
+  console.info(`setAttribute(${attributeName}, ${attributeValue}, ${stateValue})...`);
+  if ((elements.length > 0) && (attributeName !== undefined) && (attributeValue !== undefined)) {
+    if (stateValue !== undefined) attributeValue = attributeValue.replace('${state}', stateValue);
+    elements.forEach((element) => {
+      console.info(`Updating attribute on ${element.id}: ${attributeName} ${attributeValue}`);
+      element.setAttribute(attributeName, attributeValue);
+    });
+    return(true);
+  }
+  return(false);
+}
