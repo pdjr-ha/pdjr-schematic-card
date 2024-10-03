@@ -11,6 +11,7 @@ class ActiveDrawing extends HTMLElement {
     if (svg_doc && this.myHass) {
       if (this.entityMap) this.entityMap.forEach((props, id) => {
         if (this.myHass.states[id]) {
+
           if (props.updateClass) {
             let cl = props.updateClass.get(this.myHass.states[id].state);
             if ((cl) && (props.appliedClass !== cl)) {
@@ -18,6 +19,7 @@ class ActiveDrawing extends HTMLElement {
               props.appliedClass = cl;
             }
           }
+
           if (props.updateText) {
             let text = this.myHass.states[id].state + (this.myHass.states[id]["attributes"]["unit_of_measurement"] || "");
             if ((text) && (props.appliedText !== text)) {
@@ -25,12 +27,14 @@ class ActiveDrawing extends HTMLElement {
               props.appliedText = text;
             }
           }
+
           if (props.updateAttribute !== undefined) {
             if (props.appliedAttributeState !== this.myHass.states[id].state) {
               setAttribute(props.elements, props.updateAttribute.name, props.updateAttribute.value, this.myHass.states[id].state);
               props.appliedAttributeState = this.myHass.states[id].state;
             }
           }
+
         }
       });
     }
@@ -235,7 +239,7 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
    * @returns true on success false if arguments are invalid.
    */
   function setClass(elements, add, remove = undefined) {
-    console.info(`setClass(${add}, ${remove})...`);
+    //console.info(`setClass(${add}, ${remove})...`);
     if (elements.length > 0) {
       elements.forEach((element) => {
         console.info(`Updating class on ${element.id}: remove class ${remove}, add class ${add}`);
@@ -248,7 +252,7 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
   }
 
   function setText(elements, text) {
-    console.info(`setText(${text})...`);
+    //console.info(`setText(${text})...`);
     if ((elements.length > 0) && (text !== undefined)) {
       elements.forEach((element) => {
         console.info(`Updating text on ${element.id}: ${text}`);
@@ -260,7 +264,7 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
   }
 
 function setAttribute(elements, attributeName, attributeValue, stateValue = undefined) {
-  console.info(`setAttribute(${attributeName}, ${attributeValue}, ${stateValue})...`);
+  //console.info(`setAttribute(${attributeName}, ${attributeValue}, ${stateValue})...`);
   if ((elements.length > 0) && (attributeName !== undefined) && (attributeValue !== undefined)) {
     if (stateValue !== undefined) attributeValue = attributeValue.replace('${state}', stateValue);
     elements.forEach((element) => {
