@@ -58,12 +58,13 @@ class ActiveDrawing extends HTMLElement {
       }
 
       group.entities.forEach((entity) => {
+        let elems = getElements(entity.elements);
         this.entityMap.set(entity.id, {
           state: null,
           appliedClass: null,
-          elements: getElementIds(entity.elements),
+          elements: elems,
           classMap: classMap,
-          updateText: (("on_state_change" in group) && ("update_text" in group.on_state_change))?setStaticClass(getElementIds(entity.elements), group.on_state_change.update_text):false,
+          updateText: (("on_state_change" in group) && ("update_text" in group.on_state_change))?setClass(elems, group.on_state_change.update_text):false,
           updateRotation: (("on_state_change" in group) && (group.on_state_change.update_rotation === true))
         });
       });
@@ -127,7 +128,15 @@ class ActiveDrawing extends HTMLElement {
 
     this.updateStates();
 
-    function getElementIds(elementIdString) {
+    /**
+     * Parse a string of element selectors into an array of DOM
+     * elements. The string must contain a space delimited list
+     * of element ids (beginning with a '#') or class ids (beginning
+     * with a '.').
+     * @param elementIdString - space separated list of element ids.
+     * @returns array of selected DOM elems. 
+     */
+    function getElements(elementIdString) {
       return(
         elementIdString.split(/ /).reduce((a,element) => {
           var elem;
@@ -146,7 +155,13 @@ class ActiveDrawing extends HTMLElement {
       )
     }
 
-    function setStaticClass(elements, cssClass) {
+    /**
+     * Assign a CSS class to a collection of DOM elements.
+     * @param {*} elements - array of DOM elements.
+     * @param {*} cssClass - class to be assigned.
+     * @returns true on success false if arguments are invalid.
+     */
+    function setClass(elements, cssClass) {
       if ((elements.length > 0) && (cssClass !== undefined)) {
         elements.forEach((element) => { element.classList.add(cssClass); });
         return(true);

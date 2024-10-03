@@ -16,7 +16,26 @@ groups:
     entities:
       - id: ha_entity_id
         element_ids: ids_of_svg_elements_associated_with ha_entity_id
-    on_state_change:
-      update_class:
-        - state: state
-          class: name_of_css_class
+    actions:
+      - set_class: 'temp'
+      - set_text: 'text'
+      - set_attribute:
+          name: 'transform'
+          value: 'rotate(0)'
+      - update_class:
+          - state: 'on'
+            class: 'on-class'
+          - state: 'off'
+            class: 'off-class'
+      - update_text
+      - update_attribute:
+          name: 'transform'
+          value: 'rotate(${state})'
+```
+## Set actions
+Set actions are executed once as soon as the specified SVG document is
+loaded.
+
+## Update options
+Update options are executed each time the value of the associated
+entity is updated.
