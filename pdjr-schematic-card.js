@@ -234,7 +234,7 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
    * @param {*} cssClass - class to be assigned.
    * @returns true on success false if arguments are invalid.
    */
-  function setClass(elements, add, remove = undefined) {
+  function setClass(elements, add, remove) {
     var retval = undefined;
     if (elements.length > 0) {
       elements.forEach((element) => {
