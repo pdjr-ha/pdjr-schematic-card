@@ -36,8 +36,8 @@ groups:
 <dl>
   <dt>groups<dt>
   <dd>
-  This array consists of a collection of named configuration items and
-  serves simply to organise the card configuration.
+  Required array consisting of a collection of named configuration groups.
+  Serves simply to organise the card configuration.
   Each item in the groups array has the following properties.
   <dl>
     <dt>name</dt>
