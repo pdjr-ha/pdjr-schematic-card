@@ -53,7 +53,7 @@ class ActiveDrawing extends HTMLElement {
 
     this.entityMap = new Map();
     this.config.groups.filter((group) => !(group.disabled && (group.disabled === true))).forEach((group) => {
-      console.info(`Processing group ${JSON.stringify(group, null, 2)}`);
+      //console.info(`Processing group ${JSON.stringify(group, null, 2)}`);
 
       var classMap = new Map();
       if (("actions" in group) && ("update_class" in group.actions)) {
@@ -241,7 +241,7 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
   function setClass(elements, add, remove = undefined) {
     if (elements.length > 0) {
       elements.forEach((element) => {
-        console.info(`Updating class on ${element.id}: remove class ${remove}, add class ${add}`);
+        //console.info(`Updating class on ${element.id}: remove class ${remove}, add class ${add}`);
         if (remove !== undefined) element.classList.remove(remove);
         element.classList.add(add);
       });
@@ -253,7 +253,7 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
   function setText(elements, text) {
     if ((elements.length > 0) && (text !== undefined)) {
       elements.forEach((element) => {
-        console.info(`Updating text on ${element.id}: ${text}`);
+        //console.info(`Updating text on ${element.id}: ${text}`);
         element.textContent = text;
       });
       return(true);
@@ -265,7 +265,7 @@ function setAttribute(elements, attributeName, attributeValue, stateValue = unde
   if ((elements.length > 0) && (attributeName !== undefined) && (attributeValue !== undefined)) {
     if (stateValue !== undefined) attributeValue = attributeValue.replace('${state}', stateValue);
     elements.forEach((element) => {
-      console.info(`Updating attribute on ${element.id}: ${attributeName} ${attributeValue}`);
+      //console.info(`Updating attribute on ${element.id}: ${attributeName} ${attributeValue}`);
       element.setAttribute(attributeName, attributeValue);
     });
     return(true);
