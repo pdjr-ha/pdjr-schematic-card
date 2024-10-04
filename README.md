@@ -74,6 +74,40 @@ groups:
     </dd>
     <dt>actions</dt>
     <dd>
+    Required collection of one or more of the following actions.
+    Set actions are executed once immediately the SVG image is loaded.
+    Update actions are executed on every state change of the associated
+    Home Assistant entity.
+    <dl>
+      <dt>set_class: '<em>class</em>'</dt>
+      <dd>
+      Add <em>class</em> to the classList of all selected SVG elements. 
+      </dd>
+      <dt>set_text: '<em>text</em>'</dt>
+      <dd>
+      Set the text content of all selected SVG elements to <em>text</em>.
+      </dd>
+      <dt>set_attribute:</dt>
+      Introduces a configuration which will assign a specified value to
+      a named attribute in all selected SVG elements.
+      Required properties are:
+      <dl>
+        <dt>name: '<em>attribute_name</em>'
+        <dd>
+        Name of the attribute to be updated.
+        </dd>
+        <dt>value: '<em>attribute_value</em>'
+        <dd>
+        Value for the named attribute.
+        </dd>
+      </dl>
+      For example:
+      ```
+      set_attribute:
+        name: 'transform'
+        value: 'rotate(0)'
+      ```
+    </dl>
     </dd>
   </dl>
   </dd> 
