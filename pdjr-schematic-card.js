@@ -81,7 +81,6 @@ class ActiveDrawing extends HTMLElement {
         });
       });
     });
-    console.info(JSON.stringify(this.entityMap, null, 2));
 
     // Set onClick handlers for each entity in a group for actions and more-info dialogue
     this.config.groups.forEach(group => {
