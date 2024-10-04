@@ -255,14 +255,14 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
   }
 
   function setText(elements, text) {
+    var retval = undefined;
     if ((elements.length > 0) && (text !== undefined)) {
       elements.forEach((element) => {
         //console.info(`Updating text on ${element.id}: ${text}`);
-        element.textContent = text;
+        retval = element.textContent = text;
       });
-      return(true);
     }
-    return(false);
+    return(retval);
   }
 
 function setAttribute(elements, attributeName, attributeValue, stateValue = undefined) {
