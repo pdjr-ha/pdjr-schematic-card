@@ -14,9 +14,7 @@ class ActiveDrawing extends HTMLElement {
 
           if (props.updateClass) {
             let cl = props.updateClass.get(this.myHass.states[id].state);
-            if ((cl) && (props.appliedClass !== cl)) {
-              props.appliedClass = setClass(props.elements, cl, props.appliedClass);
-            }
+            props.appliedClass = setClass(props.elements, cl, props.appliedClass);
           }
 
           if (props.updateText) {
