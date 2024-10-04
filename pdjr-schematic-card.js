@@ -237,15 +237,22 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
    * @returns true on success false if arguments are invalid.
    */
   function setClass(elements, add, remove = undefined) {
+    var retval = undefined;
     if (elements.length > 0) {
       elements.forEach((element) => {
-        //console.info(`Updating class on ${element.id}: remove class ${remove}, add class ${add}`);
-        if (remove !== undefined) element.classList.remove(remove);
-        element.classList.add(add);
-        return(add);
+        console.info(`Updating class on ${element.id}: remove class ${remove}, add class ${add}`);
+        if (remove !== undefined) {
+          console.info(`Removing class '${remove}' from ${element.id}`);
+          element.classList.remove(remove);
+        }
+        if (add !== undefined) {
+          console.info(`Adding class '${add}' to ${element.id}`);
+          element.classList.add(add);
+          retval = add;
+        }
       });
     }
-    return(undefined);
+    return(retval);
   }
 
   function setText(elements, text) {
