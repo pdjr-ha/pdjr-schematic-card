@@ -15,8 +15,7 @@ class ActiveDrawing extends HTMLElement {
           if (props.updateClass) {
             let cl = props.updateClass.get(this.myHass.states[id].state);
             if ((cl) && (props.appliedClass !== cl)) {
-              setClass(props.elements, cl, props.appliedClass);
-              props.appliedClass = cl;
+              props.appliedClass = setClass(props.elements, cl, props.appliedClass);
             }
           }
 
@@ -243,10 +242,10 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
         //console.info(`Updating class on ${element.id}: remove class ${remove}, add class ${add}`);
         if (remove !== undefined) element.classList.remove(remove);
         element.classList.add(add);
+        return(add);
       });
-      return(true);
     }
-    return(false);
+    return(undefined);
   }
 
   function setText(elements, text) {

@@ -1,8 +1,8 @@
 # pdjr-schematic-card
 
 pdjr-schematic-card is a lovelace card for Home Assistant which updates
-SVG images by applying class and text value changes to image components
-in response to state changes on associated Home Assistant entities.
+SVG images by applying changes to image components in response to state
+changes on associated Home Assistant entities.
 
 ## YAML configuration
 ```
@@ -32,8 +32,30 @@ groups:
         name: 'transform'
         value: 'rotate(${state})'
 ```
-## Set actions
-Set actions are executed once as soon as the specified SVG document is
+##  
+<dl>
+  <dt>groups<dt>
+  <dd>
+  This array consists of a collection of named configuration items and
+  serves simply to organise the card configuration.
+  Each item in the groups array has the following properties.
+  <dl>
+    <dt>name</dt>
+    <dd>
+    Optional text. Purely documentary. 
+    </dd>
+    <dt>debug</dt>
+    <dd>
+    Optional boolean which defaults to false.
+    A true value causes debug info to be issued to the console.
+    </dd>
+    <dt>entities</dt>
+    <dd>
+    
+    <dd>
+  </dl>
+  </dd> 
+The 'group' property is purely documentarySet actions are executed once as soon as the specified SVG document is
 loaded.
 
 ## Update options
