@@ -102,11 +102,11 @@ groups:
         </dd>
       </dl>
       For example:
-      ```
+      <code>
       set_attribute:
         name: 'transform'
         value: 'rotate(0)'
-      ```
+      </code>
     </dl>
     </dd>
   </dl>
