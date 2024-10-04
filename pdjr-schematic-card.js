@@ -240,11 +240,11 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
     if (elements.length > 0) {
       elements.forEach((element) => {
         if ((remove !== undefined) && (element.classList.contains(remove))) {
-          console.info(`Removing class '${remove}' from ${element.id}`);
+          //console.info(`Removing class '${remove}' from ${element.id}`);
           element.classList.remove(remove);
         }
         if ((add !== undefined) && (!element.classList.contains(add))) {
-          console.info(`Adding class '${add}' to ${element.id}`);
+          //console.info(`Adding class '${add}' to ${element.id}`);
           element.classList.add(add);
           retval = add;
         }
