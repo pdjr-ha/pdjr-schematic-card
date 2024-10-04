@@ -22,8 +22,7 @@ class ActiveDrawing extends HTMLElement {
           if (props.updateText) {
             let text = this.myHass.states[id].state + (this.myHass.states[id]["attributes"]["unit_of_measurement"] || "");
             if ((text) && (props.appliedText !== text)) {
-              setText(props.elements, text);
-              props.appliedText = text;
+              props.appliedText = setText(props.elements, text);
             }
           }
 
