@@ -42,7 +42,7 @@ groups:
   <dl>
     <dt>name</dt>
     <dd>
-    Optional text. Purely documentary. 
+    Optional text. Purely documentary.
     </dd>
     <dt>debug</dt>
     <dd>
@@ -51,8 +51,30 @@ groups:
     </dd>
     <dt>entities</dt>
     <dd>
-    
+    A list of entity maps each of which binds a Home Assistant entity
+    to one or more contingent SVG elements.
+    Each entity map has two properties.
+    <dl>
+      <dt>id</dt>
+      <dd>
+      Required string identifying a Home Assistant entity whose state
+      changes will trigger actions to update the SVG.
+      For example: 'sensor.saloon_temperature'.
+      </dd>
+      <dt>element_ids</dt>
+      <dd>
+      Required string containing a list of one or more space-delimited
+      DOM selectors which identify those SVG elements that should be
+      updated when 'id's state changes.
+      Selectors must begin with either '#' (to target a single element)
+      or '.' (to target all elements in a class).
+      For example: '#saloon-door .saloon-windows'.
+      </dd>
+    </dl>
+    </dd>
+    <dt>actions</dt>
     <dd>
+    </dd>
   </dl>
   </dd> 
 The 'group' property is purely documentarySet actions are executed once as soon as the specified SVG document is
