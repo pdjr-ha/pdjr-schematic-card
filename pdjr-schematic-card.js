@@ -238,7 +238,6 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
     var retval = undefined;
     if (elements.length > 0) {
       elements.forEach((element) => {
-        console.info(`Updating class on ${element.id}: remove class ${remove}, add class ${add}`);
         if (remove !== undefined) {
           console.info(`Removing class '${remove}' from ${element.id}`);
           element.classList.remove(remove);
