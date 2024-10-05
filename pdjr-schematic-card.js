@@ -45,7 +45,7 @@ class ActiveDrawing extends HTMLElement {
     var entityId, elementId, element;
 
     // Add the stylesheet to the svg file
-    let svg_doc = this.image.contentDocument;
+    this.svg_doc = this.image.contentDocument;
     let svgElem = svg_doc.querySelector('svg');
     let style = svg_doc.createElementNS("http://www.w3.org/2000/svg", "style");
     // Make the browser load our css
