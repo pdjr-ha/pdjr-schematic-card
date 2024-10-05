@@ -68,7 +68,7 @@ class ActiveDrawing extends HTMLElement {
         }
 
         // Create an entity map with a group configuration array.
-        if (!this.entityMap.contains(entity.id)) this.entityMap.set(entity.id, []);
+        if (!this.entityMap.has(entity.id)) this.entityMap.set(entity.id, []);
         let classConfig = {
           group: group.name,
           state: undefined,
