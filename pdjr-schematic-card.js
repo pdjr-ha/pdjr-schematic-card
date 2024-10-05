@@ -8,10 +8,14 @@ class ActiveDrawing extends HTMLElement {
   updateStates() {
     const svg_doc = this.image.getSVGDocument();
 
-    if (svg_doc && this.myHass) {
-      if (this.entityMap) this.entityMap.forEach((props, id) => {
-        if (this.myHass.states[id]) {
+    if (!svg_doc) throw new Error('unable to get SVG document');
+    if (!this.myHass) throw new Error('unable to access Hass environment');
 
+    if (this.entityMap) this.entityMap.forEach((proparray, id) => {
+      proparray.forEach((props) => {
+        if (!this.myHass.states[id]) {
+          console.info(`entity '${id}' does not exist in Hass`);
+        } else {
           if (props.updateClass) {
             let cl = props.updateClass.get(this.myHass.states[id].state);
             if (cl != props.appliedClass) {
@@ -32,57 +36,63 @@ class ActiveDrawing extends HTMLElement {
               props.appliedAttributeState = this.myHass.states[id].state;
             }
           }
-
         }
       });
-    }
+    });
   }
 
   prepareSVGOnceLoaded() {
     var entityId, elementId, element;
 
     // Add the stylesheet to the svg file
-    var svg_doc = this.image.contentDocument;
-    var style = svg_doc.createElementNS("http://www.w3.org/2000/svg", "style");
+    let svg_doc = this.image.contentDocument;
+    let svgElem = svg_doc.querySelector('svg');
+    let style = svg_doc.createElementNS("http://www.w3.org/2000/svg", "style");
     // Make the browser load our css
     style.textContent = '@import url("' + this.config.stylesheet + '");';
-    var svgElem = svg_doc.querySelector('svg');
     svgElem.insertBefore(style, svgElem.firstChild);
 
+    // Create entityMap, a dictionary for every configured Hass entity
+    // which maps entity.id => entity configuration.
     this.entityMap = new Map();
+    // Iterate over every configured group
     this.config.groups.filter((group) => !(group.disabled && (group.disabled === true))).forEach((group) => {
-      //console.info(`Processing group ${JSON.stringify(group, null, 2)}`);
-
-      var classMap = new Map();
-      if (("actions" in group) && ("update_class" in group.actions)) {
-        group.actions.update_class.forEach((state) => {
-          classMap.set(state.state, state.class);
-        });
-      }
-
+      // Iterate over every configured entity
       group.entities.forEach((entity) => {
+
+        // Apply any initialisations configured for the current element.
         let elems = getElements(svg_doc, entity.elements);
-        // Apply set_ actions...
         if ('actions' in group) {
           if ('set_class' in group.actions) setClass(elems, group.actions.set_class);
           if ('set_text' in group.actions) setText(elems, group.actions.set_text);
           if ('set_attribute' in group.actions) setAttribute(elems, group.actions.set_attribute.name, group.actions.set_attribute.value);
         }
 
-        this.entityMap.set(entity.id, {
+        // Create an entity map with a group configuration array.
+        if (!this.entityMap.contains(entity.id)) this.entityMap.set(entity.id, []);
+        let classConfig = {
+          group: group.name,
           state: undefined,
           appliedClass: undefined,
           elements: elems,
-          updateClass: (('actions' in group) && ('update_class' in group.actions))?classMap:undefined,
-          updateText: (('actions' in group) && ('update_text' in group.actions))?group.actions.update_text:undefined,
-          updateAttribute: (('actions' in group) && ('update_attribute' in group.actions))?group.actions.update_attribute:undefined
-        });
-      });
-    });
+          updateClass: undefined,
+          updateText: undefined,
+          updateAttribute: undefined
+        }
+        if (('actions' in group) && ('update_class' in group.actions)) {
+          var classMap = new Map();
+          group.actions.update_class.forEach((state) => { classMap.set(state.state, state.class); });
+          classConfig.updateClass = classMap;
+        }
+        if (('actions' in group) && ('update_text' in group.actions)) {
+          classConfig.updateText = group.actions.update_text
+        }
+        if (('actions' in group) && ('update_attribute' in group.actions)) {
+          classConfig.updateAttribute = group.actions.update_attribute;
+        }
+        this.entityMap.get(entity.id).push(classConfig);
 
-    // Set onClick handlers for each entity in a group for actions and more-info dialogue
-    this.config.groups.forEach(group => {
-      group.entities.forEach(entity => {
+        // Set onClick handlers for each entity in a group for actions and more-info dialogue
         if ((entity.elements) && (element = svg_doc.getElementById(entity.elements.split(/ /)[0]))) {
           if ("action" in group) {
             group.action.forEach(service => {
@@ -132,13 +142,12 @@ class ActiveDrawing extends HTMLElement {
             });
           }
         }
+
       });
     });
 
     this.updateStates();
   }
-
-
 
   setConfig(config) {
     if (!config.id) throw new Error("card configuration requires an 'id' attribute");
