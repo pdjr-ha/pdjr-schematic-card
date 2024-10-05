@@ -8,44 +8,43 @@ class ActiveDrawing extends HTMLElement {
   updateStates() {
     const svg_doc = this.image.getSVGDocument();
 
-    if (!svg_doc) throw new Error('unable to get SVG document');
-    if (!this.myHass) throw new Error('unable to access Hass environment');
+    if ((svg_doc) && (this.myHass)) {
+      if (this.entityMap) this.entityMap.forEach((proparray, id) => {
+        proparray.forEach((props) => {
+          if (!this.myHass.states[id]) {
+            console.info(`entity '${id}' does not exist in Hass`);
+          } else {
+            if (props.updateClass) {
+              let cl = props.updateClass.get(this.myHass.states[id].state);
+              if (cl != props.appliedClass) {
+                props.appliedClass = setClass(props.elements, cl, props.appliedClass);
+              }
+            }
 
-    if (this.entityMap) this.entityMap.forEach((proparray, id) => {
-      proparray.forEach((props) => {
-        if (!this.myHass.states[id]) {
-          console.info(`entity '${id}' does not exist in Hass`);
-        } else {
-          if (props.updateClass) {
-            let cl = props.updateClass.get(this.myHass.states[id].state);
-            if (cl != props.appliedClass) {
-              props.appliedClass = setClass(props.elements, cl, props.appliedClass);
+            if (props.updateText) {
+              let text = this.myHass.states[id].state + (this.myHass.states[id]["attributes"]["unit_of_measurement"] || "");
+              if ((text) && (props.appliedText !== text)) {
+                props.appliedText = setText(props.elements, text);
+              }
+            }
+
+            if (props.updateAttribute !== undefined) {
+              if (props.appliedAttributeState !== this.myHass.states[id].state) {
+                setAttribute(props.elements, props.updateAttribute.name, props.updateAttribute.value, this.myHass.states[id].state);
+                props.appliedAttributeState = this.myHass.states[id].state;
+              }
             }
           }
-
-          if (props.updateText) {
-            let text = this.myHass.states[id].state + (this.myHass.states[id]["attributes"]["unit_of_measurement"] || "");
-            if ((text) && (props.appliedText !== text)) {
-              props.appliedText = setText(props.elements, text);
-            }
-          }
-
-          if (props.updateAttribute !== undefined) {
-            if (props.appliedAttributeState !== this.myHass.states[id].state) {
-              setAttribute(props.elements, props.updateAttribute.name, props.updateAttribute.value, this.myHass.states[id].state);
-              props.appliedAttributeState = this.myHass.states[id].state;
-            }
-          }
-        }
+        });
       });
-    });
+    }
   }
 
   prepareSVGOnceLoaded() {
     var entityId, elementId, element;
 
     // Add the stylesheet to the svg file
-    this.svg_doc = this.image.contentDocument;
+    let svg_doc = this.image.contentDocument;
     let svgElem = svg_doc.querySelector('svg');
     let style = svg_doc.createElementNS("http://www.w3.org/2000/svg", "style");
     // Make the browser load our css
