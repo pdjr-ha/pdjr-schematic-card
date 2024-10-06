@@ -225,14 +225,10 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
         var elem, elems;
         switch (element.charAt(0)) {
           case '#':
-            if (elem = svg_doc.getElementById(element.slice(1))) { console.info(elem.id); a.push(elem); }
+            if (elem = svg_doc.getElementById(element.slice(1))) { a.push(elem); }
             break;
           case '.':
-            elems = svg_doc.getElementsByClassName(element.slice(1));
-            Array.prototype.forEach.call(elems, (elem) => {
-              console.info(elem.id);
-              a.push(elem);
-            });
+            Array.prototype.forEach.call(svg_doc.getElementsByClassName(element.slice(1)), (elem) => { a.push(elem); });
             break;
           default:
             break;
