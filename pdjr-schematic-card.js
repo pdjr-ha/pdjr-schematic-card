@@ -60,7 +60,6 @@ class ActiveDrawing extends HTMLElement {
       group.entities.forEach((entity) => {
 
         // Apply any initialisations configured for the current element.
-        console.echo(`parsing ${entity.elements}`);
         let elems = getElements(svg_doc, entity.elements);
         if ('actions' in group) {
           if ('set_class' in group.actions) setClass(elems, group.actions.set_class);
