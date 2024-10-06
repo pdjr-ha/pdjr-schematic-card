@@ -222,13 +222,17 @@ customElements.define('pdjr-schematic-card', ActiveDrawing);
   function getElements(svg_doc, elementIdString) {
     return(
       elementIdString.split(/ /).reduce((a,element) => {
-        var elem;
+        var elem, elems;
         switch (element.charAt(0)) {
           case '#':
             if (elem = svg_doc.getElementById(element.slice(1))) { console.info(elem.id); a.push(elem); }
             break;
           case '.':
-            Array.prototype.forEach.call(svg_doc.getElementsByClassName(element.slice(1)), (elem) => { console.info(elem.id); a.push(elem); });
+            elems = svg_doc.getElementsByClassName(element.slice(1));
+            Array.prototype.forEach.call(elems, (elem) => {
+              console.info(elem.id);
+              a.push(elem);
+            });
             break;
           default:
             break;
