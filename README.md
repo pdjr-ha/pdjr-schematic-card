@@ -22,7 +22,8 @@ groups:
         - state: 'off'
           class: 'light-off'
 ```
-##  
+## Configuration properties
+
 <dl>
   <dt>type: custom:pdjr-schematic-card</dt>
   <dd>
@@ -122,10 +123,7 @@ groups:
     </dl>
     </dd>
   </dl>
-  </dd> 
-The 'group' property is purely documentarySet actions are executed once as soon as the specified SVG document is
-loaded.
+</dl>
 
-## Update options
-Update options are executed each time the value of the associated
-entity is updated.
+## Author
+Paul Reeve <*preeve_at_pdjr_dot_eu*>
