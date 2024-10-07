@@ -48,7 +48,7 @@ class ActiveDrawing extends HTMLElement {
     let svgElem = svg_doc.querySelector('svg');
     let style = svg_doc.createElementNS("http://www.w3.org/2000/svg", "style");
     // Make the browser load our css
-    style.textContent = '@import url("' + this.config.stylesheet + '");';
+    style.textContent = '@import url("' + ((this.config.stylesheet)?this.config.stylesheet:this.config.image.replace('.svg','.css')) + '");';
     svgElem.insertBefore(style, svgElem.firstChild);
 
     // Create entityMap, a dictionary for every configured Hass entity
@@ -150,8 +150,6 @@ class ActiveDrawing extends HTMLElement {
 
   setConfig(config) {
     if (!config.image) throw new Error("card configuration requires an 'image' attribute");
-
-    config.stylesheet = (config.stylesheet)?config.stylesheet:config.image.replace('.svg','.css');
     
     console.info(
       `%c PDJR-SCHEMATIC-CARD %c Version 1.0.1 `,
