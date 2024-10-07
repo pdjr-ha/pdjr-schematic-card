@@ -41,7 +41,7 @@ class ActiveDrawing extends HTMLElement {
   }
 
   prepareSVGOnceLoaded() {
-    var entityId, elementId, element;
+    var entityId, element;
 
     // Add any associated stylesheet to the svg file
     let svg_doc = this.image.contentDocument;
@@ -67,6 +67,7 @@ class ActiveDrawing extends HTMLElement {
         }
 
         // Create an entity map with a group configuration array.
+        console.info(`Configuring ${ent.entity}`);
         if (!this.entityMap.has(ent.entity)) this.entityMap.set(ent.entity, []);
         let classConfig = {
           group: group.name,
