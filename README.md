@@ -30,7 +30,7 @@ groups:
   </dd>
   <dt>id: '*card-identifier*'
   <dd>
-  Optional string.
+  Optional string supplying an identifier for the card.
   Defaults to 'pdjr-schematic-card'.
   </dd>
   <dt>image: '*svg-document-filename*'</dt>
@@ -57,8 +57,9 @@ groups:
     </dd>
     <dt>debug</dt>
     <dd>
-    Optional boolean which defaults to false.
-    A true value causes debug info to be issued to the console.
+    Optional boolean controlling whether or not debug information for
+    the group should be issued to the console.
+    Defaults to false (do not issue debug information).
     </dd>
     <dt>entities</dt>
     <dd>
@@ -70,16 +71,16 @@ groups:
       <dd>
       Required string identifying a Home Assistant entity whose state
       changes will trigger actions to update the SVG.
-      For example: 'sensor.saloon_temperature'.
+      For example: <code>entity: 'sensor.saloon_temperature'</code>.
       </dd>
       <dt>elements</dt>
       <dd>
       Required string containing a list of one or more space-delimited
       DOM selectors which identify those SVG elements that should be
-      updated when 'id's state changes.
+      updated when the associated entity's state changes.
       Selectors must begin with either '#' (to target a single element)
       or '.' (to target all elements in a class).
-      For example: '#saloon-door .saloon-windows'.
+      For example: <code>elements: '#saloon-door .saloon-windows'</code>.
       </dd>
     </dl>
     </dd>
