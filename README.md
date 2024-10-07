@@ -1,13 +1,14 @@
 # pdjr-schematic-card
 
-pdjr-schematic-card is a lovelace card for Home Assistant which updates
-SVG images by applying changes to image components in response to state
-changes on associated Home Assistant entities.
+**pdjr-schematic-card** is a Lovelace card for Home Assistant which
+dynamically updates SVG images in response to state changes on Home
+Assistant entities.
 
 ## YAML configuration
 ```
 type: custom:pdjr-schematic-card
 id: home_assistant_entity_identifier
+title:
 image: path_to_svg_document
 stylesheet: path_to_css_stylesheet
 groups:
@@ -34,6 +35,27 @@ groups:
 ```
 ##  
 <dl>
+  <dt>type: custom:pdjr-schematic-card</dt>
+  <dd>
+  Required.
+  </dd>
+  <dt>id: '*card-identifier*'
+  <dd>
+  Optional string.
+  Defaults to 'pdjr-schematic-card'.
+  </dd>
+  <dt>image: '*svg-document-filename*'</dt>
+  <dd>
+  Required string supplying a path to the SVG document that should be
+  displayed as the card content.
+  </dd>
+  <dt>stylesheet: '*css-document-filename*'</dt>
+  <dd>
+  Optional string supplying a path to a CSS document that should be
+  linked to the displayed SVG document.
+  Defaults to *svg-document-filename* with the filename extension
+  replaced by '.css'.
+  </dd>
   <dt>groups<dt>
   <dd>
   Required array consisting of a collection of named configuration groups.

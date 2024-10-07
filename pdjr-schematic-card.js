@@ -149,9 +149,9 @@ class ActiveDrawing extends HTMLElement {
   }
 
   setConfig(config) {
-    if (!config.id) throw new Error("card configuration requires an 'id' attribute");
     if (!config.image) throw new Error("card configuration requires an 'image' attribute");
-    if (!config.stylesheet) throw new Error("card configuration requires a 'stylesheet' attribute");
+
+    config.stylesheet = (config.stylesheet)?config.stylesheet:config.image.replace('.svg','.css');
     
     console.info(
       `%c PDJR-SCHEMATIC-CARD %c Version 1.0.1 `,
@@ -174,22 +174,15 @@ class ActiveDrawing extends HTMLElement {
       this.image.type = 'image/svg+xml';
       this.image.data = this.config.image;
       this.image.style = 'width: 100%; border-radius: 8px;';
-      this.image.id = this.config.id;
+      this.image.id = this.config.id || 'pdjr-schematic-card';
       this.image.async = false;
       this.image.onload = this.prepareSVGOnceLoaded.bind(this);
 
       // Put all the HTML elements together and also add the title if available
       this.content.appendChild(this.image);
       this.card.appendChild(this.content);
-      if (this.config.title) {
-        const title = document.createElement('h1');
-        title.className = "pdjrsc-header pdjrsc-header-" + this.config.id;
-        title.innerHTML = this.config.title;
-        root.appendChild(title);
-      }
       root.appendChild(this.card);
     }
-
   }
 
   set hass(hass) {
