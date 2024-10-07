@@ -43,11 +43,10 @@ class ActiveDrawing extends HTMLElement {
   prepareSVGOnceLoaded() {
     var entityId, elementId, element;
 
-    // Add the stylesheet to the svg file
+    // Add any associated stylesheet to the svg file
     let svg_doc = this.image.contentDocument;
     let svgElem = svg_doc.querySelector('svg');
     let style = svg_doc.createElementNS("http://www.w3.org/2000/svg", "style");
-    // Make the browser load our css
     style.textContent = '@import url("' + ((this.config.stylesheet)?this.config.stylesheet:this.config.image.replace('.svg','.css')) + '");';
     svgElem.insertBefore(style, svgElem.firstChild);
 
@@ -57,10 +56,10 @@ class ActiveDrawing extends HTMLElement {
     // Iterate over every configured group
     this.config.groups.filter((group) => !(group.disabled && (group.disabled === true))).forEach((group) => {
       // Iterate over every configured entity
-      group.entities.forEach((entity) => {
+      group.entities.forEach((ent) => {
 
         // Apply any initialisations configured for the current element.
-        let elems = getElements(svg_doc, entity.elements);
+        let elems = getElements(svg_doc, ent.elements);
         if ('actions' in group) {
           if ('set_class' in group.actions) setClass(elems, group.actions.set_class);
           if ('set_text' in group.actions) setText(elems, group.actions.set_text);
@@ -68,7 +67,7 @@ class ActiveDrawing extends HTMLElement {
         }
 
         // Create an entity map with a group configuration array.
-        if (!this.entityMap.has(entity.id)) this.entityMap.set(entity.id, []);
+        if (!this.entityMap.has(ent.entity)) this.entityMap.set(ent.entity, []);
         let classConfig = {
           group: group.name,
           state: undefined,
@@ -89,10 +88,10 @@ class ActiveDrawing extends HTMLElement {
         if (('actions' in group) && ('update_attribute' in group.actions)) {
           classConfig.updateAttribute = group.actions.update_attribute;
         }
-        this.entityMap.get(entity.id).push(classConfig);
+        this.entityMap.get(ent.entity).push(classConfig);
 
         // Set onClick handlers for each entity in a group for actions and more-info dialogue
-        if ((entity.elements) && (element = svg_doc.getElementById(entity.elements.split(/ /)[0]))) {
+        if ((ent.elements) && (element = svg_doc.getElementById(ent.elements.split(/ /)[0]))) {
           if ("action" in group) {
             group.action.forEach(service => {
               switch (service.type) {

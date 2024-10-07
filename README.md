@@ -4,34 +4,23 @@
 dynamically updates SVG images in response to state changes on Home
 Assistant entities.
 
-## YAML configuration
+## Example YAML configuration
 ```
 type: custom:pdjr-schematic-card
-id: home_assistant_entity_identifier
-title:
 image: path_to_svg_document
-stylesheet: path_to_css_stylesheet
 groups:
-  - name: name_of_group
-    debug: boolean
+  - name: 'Lighting'
     entities:
-      - id: ha_entity_id
-        element_ids: ids_of_svg_elements_associated_with ha_entity_id
+      - entity: 'switch.saloon_downlights'
+        elements: '.saloon-downlights'
+      - entity: 'switch.saloon_sconces'
+        elements: '.saloon-sconces'
     actions:
-      set_class: 'temp'
-      set_text: 'text'
-      set_attribute:
-        name: 'transform'
-        value: 'rotate(0)'
       update_class:
         - state: 'on'
-          class: 'on-class'
+          class: 'light-on'
         - state: 'off'
-          class: 'off-class'
-      update_text: true
-      update_attribute:
-        name: 'transform'
-        value: 'rotate(${state})'
+          class: 'light-off'
 ```
 ##  
 <dl>
@@ -77,13 +66,13 @@ groups:
     to one or more contingent SVG elements.
     Each entity map has two properties.
     <dl>
-      <dt>id</dt>
+      <dt>entity</dt>
       <dd>
       Required string identifying a Home Assistant entity whose state
       changes will trigger actions to update the SVG.
       For example: 'sensor.saloon_temperature'.
       </dd>
-      <dt>element_ids</dt>
+      <dt>elements</dt>
       <dd>
       Required string containing a list of one or more space-delimited
       DOM selectors which identify those SVG elements that should be
