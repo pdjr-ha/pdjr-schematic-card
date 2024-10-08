@@ -44,9 +44,8 @@ Defaults to *svg-document-filename* with the filename extension
 replaced by '.css'.
 
 ### groups:
-Required array consisting of a collection of named configuration groups.
+Required array consisting of a collection of named group objects.
 
-Serves simply to organise the card configuration.
 Each item in the groups array has the following properties.
 
 #### name: '*group-name*'
