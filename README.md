@@ -85,15 +85,8 @@ Selectors must begin with either '#' (to target a single element)
 or '.' (to target all elements in a class).
 
 #### actions:
-Required object specifying actions to be performed on the selected
-SVG elements.
-
-Set actions are processed immediately the SVG document is loaded.
-It makes sense to group all of these actions together into single
-'Initialisation' group.
-
-Update actions are processed each time the state of the associated
-Home Assistant entity changes.
+Required object specifying one or more of the following actions to
+be performed on the selected SVG elements.
 
 ##### set_class: '*class*'
 Add *class* to the classList of all selected elements as soon
@@ -108,7 +101,8 @@ as the SVG image is loaded.
 Example: ```set_text: '--'```.
 
 ##### set_attribute:
-Set the value of a specified attribute of all selected elements.
+Set the value of a specified attribute of all selected elements
+as soon as the SVG image is loaded.
 
 Example:
 ```
@@ -118,9 +112,8 @@ set_attribute:
 ```
 
 ##### update_class:
-Introduces an object containing a configuration which will assign
-a specified CSS class dependent upon the state of the associated
-Home Assistant entity.
+Introduces an array of objects each of which maps an entity state
+to a CSS class.
 
 For example:
 ```
@@ -135,6 +128,10 @@ update_class:
 Set the text content of the selected elements to *text* each time
 the state of the associated Home Assistant entity changes.
 
+##### update_attribute:
+Introduces an object which specifies an element attribute which
+should be updated on each entity state change.
+The object has the following properties.
 
 ###### name: '*attribute-name*'
 Name of the attribute to be updated.
@@ -142,9 +139,12 @@ Name of the attribute to be updated.
 ###### value: '*attribute-value*'
 Value for the named attribute.
 
-*attribute-value* may include the token '${state}' which will be
-interpolated with the current value of the associated Home Assistant
-entity.
+The *text* and *attribute-value* may include the token '${state}'
+which will be interpolated with the current value of the associated
+Home Assistant entity and the token '${uom}' which will be interpolated
+with the value of the entity's unit of measure.
+
+For example, ```update_text: '${state}${uom}'```.
 
 ## Author
 Paul Reeve <*preeve_at_pdjr_dot_eu*>
