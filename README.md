@@ -61,7 +61,7 @@ Defaults to false (do not issue debug information).
 Required array of entity objects each of which binds a Home Assistant
 entity to one or more contingent SVG elements.
 
-Each item in the entity map has two properties.
+Each object in the entities array has two properties.
 
 ##### entity: '*entity-id*'
 Required string identifying a Home Assistant entity whose state
