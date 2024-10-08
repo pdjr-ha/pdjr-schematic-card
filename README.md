@@ -24,106 +24,85 @@ groups:
 ```
 ## Configuration properties
 
-<dl>
-  <dt>type: custom:pdjr-schematic-card</dt>
-  <dd>
-  Required.
-  </dd>
-  <dt>id: '*card-identifier*'</dt>
-  <dd>
-  Optional string supplying an identifier for the card.
-  Defaults to 'pdjr-schematic-card'.
-  </dd>
-  <dt>image: '*svg-document-filename*'</dt>
-  <dd>
-  Required string supplying a path to the SVG document that should be
-  displayed as the card content.
-  </dd>
-  <dt>stylesheet: '*css-document-filename*'</dt>
-  <dd>
-  Optional string supplying a path to a CSS document that should be
-  linked to the displayed SVG document.
-  Defaults to *svg-document-filename* with the filename extension
-  replaced by '.css'.
-  </dd>
-  <dt>groups<dt>
-  <dd>
-  Required array consisting of a collection of named configuration groups.
-  Serves simply to organise the card configuration.
-  Each item in the groups array has the following properties.
-  <dl>
-    <dt>name</dt>
-    <dd>
-    Optional text. Purely documentary.
-    </dd>
-    <dt>debug</dt>
-    <dd>
-    Optional boolean controlling whether or not debug information for
-    the group should be issued to the console.
-    Defaults to false (do not issue debug information).
-    </dd>
-    <dt>entities</dt>
-    <dd>
-    A list of entity maps each of which binds a Home Assistant entity
-    to one or more contingent SVG elements.
-    Each entity map has two properties.
-    <dl>
-      <dt>entity</dt>
-      <dd>
-      Required string identifying a Home Assistant entity whose state
-      changes will trigger actions to update the SVG.
-      For example: <code>entity: 'sensor.saloon_temperature'</code>.
-      </dd>
-      <dt>elements</dt>
-      <dd>
-      Required string containing a list of one or more space-delimited
-      DOM selectors which identify those SVG elements that should be
-      updated when the associated entity's state changes.
-      Selectors must begin with either '#' (to target a single element)
-      or '.' (to target all elements in a class).
-      For example: <code>elements: '#saloon-door .saloon-windows'</code>.
-      </dd>
-    </dl>
-    </dd>
-    <dt>actions</dt>
-    <dd>
-    Required collection of one or more of the following actions.
-    Set actions are executed once immediately the SVG image is loaded.
-    Update actions are executed on every state change of the associated
-    Home Assistant entity.
-    <dl>
-      <dt>set_class: '<em>class</em>'</dt>
-      <dd>
-      Add <em>class</em> to the classList of all selected SVG elements. 
-      </dd>
-      <dt>set_text: '<em>text</em>'</dt>
-      <dd>
-      Set the text content of all selected SVG elements to <em>text</em>.
-      </dd>
-      <dt>set_attribute:</dt>
-      Introduces a configuration which will assign a specified value to
-      a named attribute in all selected SVG elements.
-      Required properties are:
-      <dl>
-        <dt>name: '<em>attribute_name</em>'
-        <dd>
-        Name of the attribute to be updated.
-        </dd>
-        <dt>value: '<em>attribute_value</em>'
-        <dd>
-        Value for the named attribute.
-        </dd>
-      </dl>
-      For example:
-      <code>
-      set_attribute:
-        name: 'transform'
-        value: 'rotate(0)'
-      </code>
-    </dl>
-    </dd>
-  </dl>
-</dl>
+### type: custom:pdjr-schematic-card
+Required.
+
+### id: '*card-identifier*'
+Optional string supplying an identifier for the card.
+
+Defaults to 'pdjr-schematic-card'.
+
+### image: '*svg-document-filename*'
+Required string supplying a path to the SVG document that should be
+displayed as the card content.
+
+### stylesheet: '*css-document-filename*'
+Optional string supplying a path to a CSS document that should be
+linked to the displayed SVG document.
+
+Defaults to *svg-document-filename* with the filename extension
+replaced by '.css'.
+
+### groups:
+Required array consisting of a collection of named configuration groups.
+
+Serves simply to organise the card configuration.
+Each item in the groups array has the following properties.
+
+#### name: '*group-name*'
+Optional, purely documentary, name for the group.
+
+#### debug: [ true | false ]
+Optional boolean controlling whether or not debug information for
+the group should be issued to the console.
+
+Defaults to false (do not issue debug information).
+
+#### entities:
+Required array of entity objects each of which binds a Home Assistant
+entity to one or more contingent SVG elements.
+
+Each item in the entity map has two properties.
+
+##### entity: '*entity-id*'
+Required string identifying a Home Assistant entity whose state
+changes should update the SVG.
+
+##### elements: '*element-selectors*'
+Required string containing a space-delimited list of one or more
+DOM selectors which identify those SVG elements that should be
+updated when the associated entity's state changes.
+    
+Selectors must begin with either '#' (to target a single element)
+or '.' (to target all elements in a class).
+
+#### actions:
+Required object specifying actions to be performed on the selected
+SVG elements.
+Actions are selected and configured by included one or more of the
+following properties in the *action* object.
+
+##### set_class: '*class*'
+Add *class* to the classList of all selected SVG elements.
+
+##### set_text: '*text*'
+Set the text content of all selected SVG elements to *text*.
+
+##### set_attribute:
+Object introducing a configuration which will assign a specified
+value to a named attribute in all selected SVG elements.
+
+Required properties are.
+
+###### name: '*attribute-name*'
+Name of the attribute to be updated.
+
+###### value: '*attribute-value*'
+Value for the named attribute.
+
+*attribute-value* may include the token '${state}' which will be
+interpolated with the current value of the associated Home Assistant
+entity.
 
 ## Author
 Paul Reeve <*preeve_at_pdjr_dot_eu*>
