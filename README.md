@@ -49,7 +49,7 @@ Required array consisting of a collection of named group objects.
 Each item in the groups array has the following properties.
 
 #### name: '*group-name*'
-Optional, purely documentary, name for the group.
+Required, purely documentary, name for the group.
 
 #### debug: [ true | false ]
 Optional boolean controlling whether or not debug information for
