@@ -29,7 +29,7 @@ groups:
   <dd>
   Required.
   </dd>
-  <dt>id: '*card-identifier*'
+  <dt>id: '*card-identifier*'</dt>
   <dd>
   Optional string supplying an identifier for the card.
   Defaults to 'pdjr-schematic-card'.
