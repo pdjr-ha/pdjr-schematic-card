@@ -4,6 +4,15 @@
 dynamically updates SVG images in response to state changes on Home
 Assistant entities.
 
+The plugin supports three types of update.
+
+A 'class' update allows arbitrary CSS classnames to be assigned to
+selected elements dependent upon the state of a Home Assistant entity.
+
+A 'text' update allows an arbitrary text value to be assigned to
+selected elements.
+The assigned text can be a simple state value or a more complex 
+
 ## Example YAML configuration
 ```
 type: custom:pdjr-schematic-card
@@ -71,27 +80,61 @@ changes should update the SVG.
 Required string containing a space-delimited list of one or more
 DOM selectors which identify those SVG elements that should be
 updated when the associated entity's state changes.
-    
+
 Selectors must begin with either '#' (to target a single element)
 or '.' (to target all elements in a class).
 
 #### actions:
 Required object specifying actions to be performed on the selected
 SVG elements.
-Actions are selected and configured by included one or more of the
-following properties in the *action* object.
+
+Set actions are processed immediately the SVG document is loaded.
+It makes sense to group all of these actions together into single
+'Initialisation' group.
+
+Update actions are processed each time the state of the associated
+Home Assistant entity changes.
 
 ##### set_class: '*class*'
-Add *class* to the classList of all selected SVG elements.
+Add *class* to the classList of all selected elements as soon
+as the SVG image is loaded.
+
+Example: ```set_class: 'invisible'```.
 
 ##### set_text: '*text*'
-Set the text content of all selected SVG elements to *text*.
+Set the text content of all selected elements to *text* as soon
+as the SVG image is loaded.
+
+Example: ```set_text: '--'```.
 
 ##### set_attribute:
-Object introducing a configuration which will assign a specified
-value to a named attribute in all selected SVG elements.
+Set the value of a specified attribute of all selected elements.
 
-Required properties are.
+Example:
+```
+set_attribute:
+  name: 'transform'
+  value: 'rotate(0)'
+```
+
+##### update_class:
+Introduces an object containing a configuration which will assign
+a specified CSS class dependent upon the state of the associated
+Home Assistant entity.
+
+For example:
+```
+update_class:
+  - state: 'on'
+    class: 'visible'
+  - state: 'off'
+    class: 'invisible'
+```
+
+##### update_text: '*text*'
+Set the text content of the selected elements to *text* each time
+the state of the associated Home Assistant entity changes.
+
 
 ###### name: '*attribute-name*'
 Name of the attribute to be updated.
