@@ -9,9 +9,15 @@ The plugin supports three types of update.
 A 'class' update allows arbitrary CSS classnames to be assigned to
 selected elements dependent upon the state of a Home Assistant entity.
 
-A 'text' update allows an arbitrary text value to be assigned to
-selected elements.
-The assigned text can be a simple state value or a more complex 
+A 'text' update allows arbitrary text content to be assigned to selected
+elements.
+The assigned text can be plain text or a text value that includes the
+current state of a Home Assistant entity. 
+
+An 'attribute' update allows an arbitrary element attribute to be
+assigned a specified value.
+The assigned value can be plain text or a text value that includes the
+current state of a Home Assistant entity. 
 
 ## Example YAML configuration
 ```
