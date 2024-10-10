@@ -10,21 +10,22 @@ A 'class' update allows arbitrary CSS classnames to be assigned to
 selected elements dependent upon the state of a Home Assistant entity.
 
 A 'text' update allows arbitrary text content to be assigned to selected
-elements.
+elements when the state of a Home Assistant entity changes.
 The assigned text can be plain text or a text value that includes the
-current state of a Home Assistant entity. 
+current state of the entity.
 
-An 'attribute' update allows an arbitrary element attribute to be
-assigned a specified value.
+An 'attribute' update allows an arbitrary attribute value to be
+assigned to selected elements when the state of a Home Assistant entity
+changes.
 The assigned value can be plain text or a text value that includes the
-current state of a Home Assistant entity. 
+current state of the entity. 
 
 ## Example YAML configuration
 ```
 type: custom:pdjr-schematic-card
 image: path_to_svg_document
 groups:
-  - name: 'Lighting'
+  - name: 'Lighting (class update)'
     entities:
       - entity: 'switch.saloon_downlights'
         elements: '.saloon-downlights'
@@ -36,6 +37,20 @@ groups:
           class: 'light-on'
         - state: 'off'
           class: 'light-off'
+  - name: 'Temperature (text update)'
+    entities:
+      - entity: 'sensor.saloon_temperature'
+        elements: '.saloon-temperature'
+    actions:
+      update_text: '${state}${uom}'
+  - name: 'Movement (attribute update)'
+    entities:
+      - entity: 'sensor.steering_rudder_angle'
+        elements: '#rudder-pointer'
+    actions:
+      update_attribute:
+        name: 'transform'
+        value: 'rotate(${state})'
 ```
 ## Configuration properties
 
