@@ -24,8 +24,12 @@ class ActiveDrawing extends HTMLElement {
             if ('updateText' in props) {
               let text = '';
               if (props.updateText) { // There is a text string
-                text = props.updateText.replace('${state}', this.myHass.states[id]);
-                text = props.updateText.replace('${uom}', this.myHass.states[id]['attributes']['unit_of_measurement']);
+                try {
+                  text = props.updateText.replace('${state}', this.myHass.states[id].state);
+                  text = props.updateText.replace('${uom}', this.myHass.states[id].attribures.unit_of_measurement);
+                } catch(e) {
+                  console.info(`error preparing text for ${id}`);
+                }
               } else {
                 text = this.myHass.states[id].state;
               }
