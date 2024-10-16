@@ -141,12 +141,13 @@ class ActiveDrawing extends HTMLElement {
           } else {
             // Click event for mouse
             element.addEventListener('click', (e) => {
-              document.querySelector('home-assistant').dispatchEvent(new Event('hass-more-info', {}));
+              console.info(JSON.stringify(ent));
+              document.querySelector('home-assistant').dispatchEvent(new Event('hass-more-info', { entityId: ent.entity }));
               //e.preventDefault();
             });
             // Touch event for touchscreens
             element.addEventListener('touchend', (e) => {
-              document.querySelector('home-assistant').dispatchEvent(new Event('hass-more-info', {}));
+              document.querySelector('home-assistant').dispatchEvent(new Event('hass-more-info', { entityId: ent.entity }));
               e.preventDefault();
             });
           }
