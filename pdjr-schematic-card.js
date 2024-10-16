@@ -141,9 +141,8 @@ class ActiveDrawing extends HTMLElement {
           } else {
             // Click event for mouse
             element.addEventListener('click', (e) => {
-              console.info(JSON.stringify(ent));
               document.querySelector('home-assistant').dispatchEvent(new Event('hass-more-info', { entityId: ent.entity }));
-              e.preventDefault();
+              //e.preventDefault();
             });
             // Touch event for touchscreens
             element.addEventListener('touchend', (e) => {
