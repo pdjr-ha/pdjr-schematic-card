@@ -144,12 +144,12 @@ class ActiveDrawing extends HTMLElement {
               let event = new Event('hass-more-info');
               event.detail = { 'entityId': ent.entity };
               document.querySelector('home-assistant').dispatchEvent(event);
-              //e.preventDefault();
             });
             // Touch event for touchscreens
             element.addEventListener('touchend', (e) => {
-              document.querySelector('home-assistant').dispatchEvent(new Event('hass-more-info', { entityId: ent.entity }));
-              e.preventDefault();
+              let event = new Event('hass-more-info');
+              event.detail = { 'entityId': ent.entity };
+              document.querySelector('home-assistant').dispatchEvent(event);
             });
           }
         });
