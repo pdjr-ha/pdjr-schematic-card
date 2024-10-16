@@ -21,7 +21,7 @@ class ActiveDrawing extends HTMLElement {
               }
             }
 
-            if ('updateText' in props) {
+            if (props.updateText) {
               let text = '';
               if (props.updateText) { // There is a text string
                 try {
@@ -39,7 +39,7 @@ class ActiveDrawing extends HTMLElement {
               }
             }
 
-            if (props.updateAttribute !== undefined) {
+            if (props.updateAttribute) {
               if (props.appliedAttributeState !== this.myHass.states[id].state) {
                 setAttribute(props.elements, props.updateAttribute.name, props.updateAttribute.value, this.myHass.states[id].state);
                 props.appliedAttributeState = this.myHass.states[id].state;
