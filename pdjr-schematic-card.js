@@ -63,7 +63,7 @@ class ActiveDrawing extends HTMLElement {
       console.info(`stylesheet not specified - using default '${this.config.image.replace('.svg','.css')}'`);
       style.textContent = '@import url("' + this.config.image.replace('.svg','.css') + '");';
     }
-      svgElem.insertBefore(style, svgElem.firstChild);
+    svgElem.insertBefore(style, svgElem.firstChild);
 
     // Create entityMap, a dictionary for every configured Hass entity
     // which maps entity.id => entity configuration.
@@ -105,8 +105,7 @@ class ActiveDrawing extends HTMLElement {
         }
         this.entityMap.get(ent.entity).push(classConfig);
 
-        // Set onClick handlers for each entity in a group for actions and more-info dialogue
-        if ((ent.elements) && (element = svg_doc.getElementById(ent.elements.split(/ /)[0]))) {
+        elems.forEach((element) => {
           if ("action" in group) {
             group.action.forEach(service => {
               switch (service.type) {
@@ -151,8 +150,7 @@ class ActiveDrawing extends HTMLElement {
               e.preventDefault();
             });
           }
-        }
-
+        });
       });
     });
 
