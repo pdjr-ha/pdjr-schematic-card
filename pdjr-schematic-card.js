@@ -51,7 +51,7 @@ class ActiveDrawing extends HTMLElement {
   }
 
   prepareSVGOnceLoaded() {
-    var entityId, element;
+    var entityId, event;
 
     // Add any associated stylesheet to the svg file
     let svg_doc = this.image.contentDocument;
@@ -141,13 +141,13 @@ class ActiveDrawing extends HTMLElement {
           } else {
             // Click event for mouse
             element.addEventListener('click', (e) => {
-              let event = new Event('hass-more-info');
+              event = new Event('hass-more-info');
               event.detail = { 'entityId': ent.entity };
               document.querySelector('home-assistant').dispatchEvent(event);
             });
             // Touch event for touchscreens
             element.addEventListener('touchend', (e) => {
-              let event = new Event('hass-more-info');
+              event = new Event('hass-more-info');
               event.detail = { 'entityId': ent.entity };
               document.querySelector('home-assistant').dispatchEvent(event);
             });
