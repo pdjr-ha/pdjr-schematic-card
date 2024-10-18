@@ -50,12 +50,9 @@ class ActiveDrawing extends HTMLElement {
     let svg_doc = this.image.contentDocument;
     let svgElem = svg_doc.querySelector('svg');
     let style = svg_doc.createElementNS("http://www.w3.org/2000/svg", "style");
-    if (this.config.stylesheet) {
-      style.textContent = '@import url("' + this.config.stylesheet + '");';
-    } else {
-      console.info(`using default stylesheet '${this.config.image.replace('.svg','.css')}'`);
-      style.textContent = '@import url("' + this.config.image.replace('.svg','.css') + '");';
-    }
+    let styleSheet = (this.config.stylesheet)?`@import url("${this.config.stylesheet}")`:`@import url("${this.config.image.replace('.svg','.css')}")`
+    console.info(`using ${styleSheet}`);
+    style.textContent = styleSheet;
     svgElem.insertBefore(style, svgElem.firstChild);
 
     // Create entityMap, a dictionary for every configured Hass entity
