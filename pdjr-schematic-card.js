@@ -16,7 +16,7 @@ class ActiveDrawing extends HTMLElement {
 
               if (groupProperties.updateClass) {
                 let cl = groupProperties.updateClass.get(this.myHass.states[entityId].state);
-                if (groupProperties.currentClass != cl) groupProperties.currentClass = updateClass(groupProperties.elements, cl, groupProperties.appliedClass);
+                if (groupProperties.currentClass != cl) groupProperties.currentClass = updateClass(groupProperties.elements, cl, groupProperties.currentClass);
               }
 
               if (groupProperties.updateText) {
