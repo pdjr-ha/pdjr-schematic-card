@@ -64,41 +64,47 @@ class ActiveDrawing extends HTMLElement {
     this.entityMap = new Map();
     // Iterate over every configured group
     this.config.groups.filter((group) => !(group.disabled && (group.disabled === true))).forEach((group) => {
-      // Iterate over every configured entity
-      group.entities.forEach((ent) => {
+      if (('entities' in group) && ('actions' in group)) {
+        // Iterate over every configured entity
+        group.entities.forEach((ent) => {
 
-        // Apply any initialisations configured for the current element.
-        let elems = getElements(svg_doc, ent.elements);
-        if ('actions' in group) {
+          // Apply any initialisations configured for the current element.
+          let elems = getElements(svg_doc, ent.elements);
           if ('set_class' in group.actions) updateClass(elems, group.actions.set_class);
           if ('set_text' in group.actions) updateText(elems, group.actions.set_text);
           if ('set_attribute' in group.actions) updateAttribute(elems, group.actions.set_attribute.name, group.actions.set_attribute.value);
-        }
 
-        // Create an entity map with a group configuration array.
-        if (!this.entityMap.has(ent.entity)) this.entityMap.set(ent.entity, []);
-        let classConfig = {
-          group: group.name,
-          elements: elems,
-          currentState: undefined,
-          currentClass: undefined,
-          currentText: undefined,
-          currentAttribute: undefined
-        }
-        if (('actions' in group) && ('update_class' in group.actions)) {
-          var classMap = new Map();
-          group.actions.update_class.forEach((state) => { classMap.set(state.state, state.class); });
-          classConfig.updateClass = classMap;
-        }
-        if (('actions' in group) && ('update_text' in group.actions)) {
-          classConfig.updateText = group.actions.update_text
-        }
-        if (('actions' in group) && ('update_attribute' in group.actions)) {
-          classConfig.updateAttribute = group.actions.update_attribute;
-        }
-        this.entityMap.get(ent.entity).push(classConfig);
+          // Create an entity map with a group configuration array.
+          if (!this.entityMap.has(ent.entity)) this.entityMap.set(ent.entity, []);        
+          let groupProperties = {
+            group: group.name,
+            elements: elems,
+            currentState: undefined,
+            currentClass: undefined,
+            currentText: undefined,
+            currentAttribute: undefined,
+            updateClass = undefined,
+            updateText = undefined,
+            updateAttribute = undefined
+          };
 
-        elems.forEach((element) => {
+          if ('update_class' in group.actions) {
+            var classMap = new Map();
+            group.actions.update_class.forEach((state) => { classMap.set(state.state, state.class); });
+            groupProperties.updateClass = classMap;
+          }
+
+          if ('update_text' in group.actions) {
+            groupProperties.updateText = group.actions.update_text
+          }
+
+          if ('update_attribute' in group.actions) {
+            groupProperties.updateAttribute = group.actions.update_attribute;
+          }
+
+          this.entityMap.get(ent.entity).push(groupProperties);
+
+          elems.forEach((element) => {
           if ("action" in group) {
             group.action.forEach(service => {
               switch (service.type) {
@@ -145,8 +151,12 @@ class ActiveDrawing extends HTMLElement {
               document.querySelector('home-assistant').dispatchEvent(event);
             });
           }
+          });
+
         });
-      });
+      } else {
+        console.error(`bad configuration: missing 'action' and/or 'entities' property in group '${group.name}'`);
+      }
     });
 
     this.updateStates();
