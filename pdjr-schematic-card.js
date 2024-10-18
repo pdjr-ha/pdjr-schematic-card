@@ -9,35 +9,35 @@ class ActiveDrawing extends HTMLElement {
     const svg_doc = this.image.getSVGDocument();
 
     if ((svg_doc) && (this.myHass)) {
-      if (this.entityMap) this.entityMap.forEach((proparray, id) => {
-        proparray.forEach((props) => {
+      if (this.entityMap) this.entityMap.forEach((groupPropertiesArray, entityId) => {
+        groupPropertiesArray.forEach((groupProperties) => {
           try {
-            if (props.currentState != this.myHass.states[id]) {
+            if (groupProperties.currentState != this.myHass.states[entityId].state) {
 
-              if (props.updateClass) {
-                let cl = props.updateClass.get(this.myHass.states[id].state);
-                if (props.currentClass != cl) props.currentClass = updateClass(props.elements, cl, props.appliedClass);
+              if (groupProperties.updateClass) {
+                let cl = groupProperties.updateClass.get(this.myHass.states[entityId].state);
+                if (groupProperties.currentClass != cl) groupProperties.currentClass = updateClass(groupProperties.elements, cl, groupProperties.appliedClass);
               }
 
-              if (props.updateText) {
-                let text = props.updateText;
-                text = text.replace('${state}', this.myHass.states[id].state);
-                text = text.replace('${uom}', this.myHass.states[id].attributes.unit_of_measurement);
-                if (props.currentText != text) props.currentText = updateText(props.elements, text);
+              if (groupProperties.updateText) {
+                let text = groupProperties.updateText;
+                text = text.replace('${state}', this.myHass.states[entityId].state);
+                text = text.replace('${uom}', this.myHass.states[entityId].attributes.unit_of_measurement);
+                if (groupProperties.currentText != text) groupProperties.currentText = updateText(groupProperties.elements, text);
               }
 
-              if ((props.updateAttribute) && (props.updateAttribute.name) && (props.updateAttribute.value)) {
-                let attributeValue = props.updateAttribute.value;
-                attributeValue = attributeValue.replace('${state}', this.myHass.states[id]);
-                if (props.currentAttribute != attributeValue) props.currentAttribute =  updateAttribute(props.elements, props.updateAttribute.name, attributeValue);
+              if ((groupProperties.updateAttribute) && (groupProperties.updateAttribute.name) && (groupProperties.updateAttribute.value)) {
+                let attributeValue = groupProperties.updateAttribute.value;
+                attributeValue = attributeValue.replace('${state}', this.myHass.states[entityId]);
+                if (groupProperties.currentAttribute != attributeValue) groupProperties.currentAttribute =  updateAttribute(groupProperties.elements, groupProperties.updateAttribute.name, attributeValue);
               } else {
                 throw new Error(`bad attribute configuration`);
               }
 
-              props.currentState = this.myHass.states[id];
+              groupProperties.currentState = this.myHass.states[entityId];
             }
           } catch(e) {
-            console.error(`error updating entity '${id}' in group '${props.group}' (${e.message})`);
+            console.error(`error updating entity '${entityId}' in group '${groupProperties.group}' (${e.message})`);
           }
         });
       });
