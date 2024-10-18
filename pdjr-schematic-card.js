@@ -12,7 +12,7 @@ class ActiveDrawing extends HTMLElement {
       if (this.entityMap) this.entityMap.forEach((groupPropertiesArray, entityId) => {
         groupPropertiesArray.forEach((groupProperties) => {
           try {
-            if (groupProperties.currentState != this.myHass.states[entityId].state) {
+            if ((this.myHass.states[entityId].state) && (groupProperties.currentState != this.myHass.states[entityId].state)) {
 
               if (groupProperties.updateClass) {
                 let cl = groupProperties.updateClass.get(this.myHass.states[entityId].state);
@@ -35,7 +35,6 @@ class ActiveDrawing extends HTMLElement {
                   throw new Error(`'update_attribute' configuration missing 'name' and 'value' properties`);
                 }
               }
-
               groupProperties.currentState = this.myHass.states[entityId].state;
             }
           } catch(e) {
@@ -69,7 +68,6 @@ class ActiveDrawing extends HTMLElement {
       if (('entities' in group) && ('actions' in group)) {
         // Iterate over every configured entity
         group.entities.forEach((ent) => {
-
           // Apply any initialisations configured for the current element.
           let elems = getElements(svg_doc, ent.elements);
           if ('set_class' in group.actions) updateClass(elems, group.actions.set_class);
