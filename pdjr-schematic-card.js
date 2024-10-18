@@ -11,39 +11,33 @@ class ActiveDrawing extends HTMLElement {
     if ((svg_doc) && (this.myHass)) {
       if (this.entityMap) this.entityMap.forEach((proparray, id) => {
         proparray.forEach((props) => {
-          if (!this.myHass.states[id]) {
-            console.info(`entity '${id}' does not exist in Hass`);
-          } else {
-            if (props.updateClass) {
-              let cl = props.updateClass.get(this.myHass.states[id].state);
-              if (cl != props.appliedClass) {
-                props.appliedClass = setClass(props.elements, cl, props.appliedClass);
-              }
-            }
+          try {
+            if (props.currentState != this.myHass.states[id]) {
 
-            if (props.updateText) {
-              let text = '';
-              if (props.updateText) { // There is a text string
-                try {
-                  text = props.updateText.replace('${state}', this.myHass.states[id].state);
-                  text = text.replace('${uom}', this.myHass.states[id].attributes.unit_of_measurement);
-                } catch(e) {
-                  console.info(`error preparing text for ${id} (${e.message})`);
-                }
+              if (props.updateClass) {
+                let cl = props.updateClass.get(this.myHass.states[id].state);
+                if (props.currentClass != cl) props.currentClass = updateClass(props.elements, cl, props.appliedClass);
+              }
+
+              if (props.updateText) {
+                let text = props.updateText;
+                text = text.replace('${state}', this.myHass.states[id].state);
+                text = text.replace('${uom}', this.myHass.states[id].attributes.unit_of_measurement);
+                if (props.currentText != text) props.currentText = updateText(props.elements, text);
+              }
+
+              if ((props.updateAttribute) && (props.updateAttribute.name) && (props.updateAttribute.value)) {
+                let attributeValue = props.updateAttribute.value;
+                attributeValue = attributeValue.replace('${state}', this.myHass.states[id]);
+                if (props.currentAttribute != attributeValue) props.currentAttribute =  updateAttribute(props.elements, props.updateAttribute.name, props.updateAttribute.value, this.myHass.states[id].state);
               } else {
-                text = this.myHass.states[id].state;
+                throw new Error(`bad attribute configuration`);
               }
-              if ((text) && (props.appliedText !== text)) {
-                props.appliedText = setText(props.elements, text);
-              }
-            }
 
-            if (props.updateAttribute) {
-              if (props.appliedAttributeState !== this.myHass.states[id].state) {
-                setAttribute(props.elements, props.updateAttribute.name, props.updateAttribute.value, this.myHass.states[id].state);
-                props.appliedAttributeState = this.myHass.states[id].state;
-              }
+              props.currentState = this.myHass.states[id];
             }
+          } catch(e) {
+            console.error(`error updating entity '${id}' in group '${props.group}' (${e.message})`);
           }
         });
       });
@@ -85,12 +79,11 @@ class ActiveDrawing extends HTMLElement {
         if (!this.entityMap.has(ent.entity)) this.entityMap.set(ent.entity, []);
         let classConfig = {
           group: group.name,
-          state: undefined,
-          appliedClass: undefined,
           elements: elems,
-          updateClass: undefined,
-          updateText: undefined,
-          updateAttribute: undefined
+          currentState: undefined,
+          currentClass: undefined,
+          currentText: undefined,
+          currentAttribute: undefined
         }
         if (('actions' in group) && ('update_class' in group.actions)) {
           var classMap = new Map();
@@ -210,78 +203,75 @@ class ActiveDrawing extends HTMLElement {
 
 customElements.define('pdjr-schematic-card', ActiveDrawing);
 
+/**
+ * Parse a string of element selectors into an array of DOM
+ * elements. The string must contain a space delimited list
+ * of selectors beginning with either a '#' or a '.'.
+ * @param document - SVG document
+ * @param selectors - space separated list of element ids.
+ * @returns array of selected DOM elems. 
+ */
+function getElements(document, selectors) {
+  return(
+    selectors.split(/ /).reduce((a, selector) => {
+      var element;
+      switch (selector.charAt(0)) {
+        case '#':
+          if (element = document.getElementById(selector.slice(1))) {
+            a.push(element);
+          } else {
+            console.debug(`element with id '${selector.slice(1)}' not found in DOM`);
+          }
+          break;
+        case '.':
+          Array.prototype.forEach.call(document.getElementsByClassName(selector.slice(1)), (element) => { a.push(element); });
+          break;
+        default:
+          console.debug(`invalid '${selector}' (should begin with '#' or '.')`);
+          break;
+      }
+      return(a);
+    }, [])
+  )
+}
 
-
-  /**
-   * Parse a string of element selectors into an array of DOM
-   * elements. The string must contain a space delimited list
-   * of element ids (beginning with a '#') or class ids (beginning
-   * with a '.').
-   * @param elementIdString - space separated list of element ids.
-   * @returns array of selected DOM elems. 
-   */
-  function getElements(svg_doc, elementIdString) {
-    return(
-      elementIdString.split(/ /).reduce((a,element) => {
-        var elem, elems;
-        switch (element.charAt(0)) {
-          case '#':
-            if (elem = svg_doc.getElementById(element.slice(1))) { a.push(elem); }
-            break;
-          case '.':
-            Array.prototype.forEach.call(svg_doc.getElementsByClassName(element.slice(1)), (elem) => { a.push(elem); });
-            break;
-          default:
-            break;
-        }
-        return(a);
-      }, [])
-    )
-  }
-
-  /**
-   * Assign a CSS class to a collection of DOM elements.
-   * @param {*} elements - array of DOM elements.
-   * @param {*} cssClass - class to be assigned.
-   * @returns true on success false if arguments are invalid.
-   */
-  function setClass(elements, add, remove) {
-    var retval = undefined;
-    if (elements.length > 0) {
-      elements.forEach((element) => {
-        if ((remove !== undefined) && (element.classList.contains(remove))) {
-          //console.info(`Removing class '${remove}' from ${element.id}`);
-          element.classList.remove(remove);
-        }
-        if ((add !== undefined) && (!element.classList.contains(add))) {
-          //console.info(`Adding class '${add}' to ${element.id}`);
-          element.classList.add(add);
-          retval = add;
-        }
-      });
-    }
-    return(retval);
-  }
-
-  function setText(elements, text) {
-    var retval = undefined;
-    if ((elements.length > 0) && (text !== undefined)) {
-      elements.forEach((element) => {
-        //console.info(`Updating text on ${element.id}: ${text}`);
-        retval = element.textContent = text;
-      });
-    }
-    return(retval);
-  }
-
-function setAttribute(elements, attributeName, attributeValue, stateValue = undefined) {
-  if ((elements.length > 0) && (attributeName !== undefined) && (attributeValue !== undefined)) {
-    if (stateValue !== undefined) attributeValue = attributeValue.replace('${state}', stateValue);
+/**
+ * Update the classList of a collection of DOM elements.
+ * @param elements - array of DOM elements.
+ * @param add - class to be added to elements.
+ * @param remove - class to be removed from elements.
+ * @returns add.
+ */
+function updateClass(elements, add, remove) {
+  var retval = undefined;
+  if (elements.length > 0) {
     elements.forEach((element) => {
-      //console.info(`Updating attribute on ${element.id}: ${attributeName} ${attributeValue}`);
-      element.setAttribute(attributeName, attributeValue);
+      if ((remove !== undefined) && (element.classList.contains(remove))) {
+        element.classList.remove(remove);
+      }
+      if ((add !== undefined) && (!element.classList.contains(add))) {
+        element.classList.add(add);
+        retval = add;
+      }
     });
-    return(true);
   }
-  return(false);
+  return(retval);
+}
+
+function updateText(elements, text) {
+  var retval = undefined;
+  if ((elements.length > 0) && (text !== undefined)) {
+    elements.forEach((element) => { element.textContent = text; });
+    retval = text;
+  }
+  return(retval);
+}
+
+function updateAttribute(elements, attributeName, attributeValue) {
+  var retval = undefined;
+  if ((elements.length > 0) && (attributeName !== undefined) && (attributeValue !== undefined)) {
+    elements.forEach((element) => { element.setAttribute(attributeName, attributeValue); });
+    retval = attributeValue;
+  }
+  return(retval);
 }
