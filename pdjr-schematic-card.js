@@ -26,15 +26,17 @@ class ActiveDrawing extends HTMLElement {
                 if (groupProperties.currentText != text) groupProperties.currentText = updateText(groupProperties.elements, text);
               }
 
-              if ((groupProperties.updateAttribute) && (groupProperties.updateAttribute.name) && (groupProperties.updateAttribute.value)) {
-                let attributeValue = groupProperties.updateAttribute.value;
-                attributeValue = attributeValue.replace('${state}', this.myHass.states[entityId]);
-                if (groupProperties.currentAttribute != attributeValue) groupProperties.currentAttribute =  updateAttribute(groupProperties.elements, groupProperties.updateAttribute.name, attributeValue);
-              } else {
-                throw new Error(`bad attribute configuration`);
+              if (groupProperties.updateAttribute) {
+                if ((groupProperties.updateAttribute.name) && (groupProperties.updateAttribute.value)) {
+                  let attributeValue = groupProperties.updateAttribute.value;
+                  attributeValue = attributeValue.replace('${state}', this.myHass.states[entityId].state);
+                  if (groupProperties.currentAttribute != attributeValue) groupProperties.currentAttribute =  updateAttribute(groupProperties.elements, groupProperties.updateAttribute.name, attributeValue);
+                } else {
+                  throw new Error(`'update_attribute' configuration missing 'name' and 'value' properties`);
+                }
               }
 
-              groupProperties.currentState = this.myHass.states[entityId];
+              groupProperties.currentState = this.myHass.states[entityId].state;
             }
           } catch(e) {
             console.error(`error updating entity '${entityId}' in group '${groupProperties.group}' (${e.message})`);
