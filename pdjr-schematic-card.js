@@ -37,9 +37,7 @@ class ActiveDrawing extends HTMLElement {
               }
               groupProperties.currentState = this.myHass.states[entityId].state;
             }
-          } catch(e) {
-            console.error(`error updating entity '${entityId}' in group '${groupProperties.group}' (${e.message})`);
-          }
+          } catch(e) { }
         });
       });
     }
