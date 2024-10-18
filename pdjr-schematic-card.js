@@ -83,9 +83,9 @@ class ActiveDrawing extends HTMLElement {
             currentClass: undefined,
             currentText: undefined,
             currentAttribute: undefined,
-            updateClass = undefined,
-            updateText = undefined,
-            updateAttribute = undefined
+            updateClass: undefined,
+            updateText: undefined,
+            updateAttribute: undefined
           };
 
           if ('update_class' in group.actions) {
