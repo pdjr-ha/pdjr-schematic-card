@@ -53,7 +53,7 @@ class ActiveDrawing extends HTMLElement {
     if (this.config.stylesheet) {
       style.textContent = '@import url("' + this.config.stylesheet + '");';
     } else {
-      console.info(`stylesheet not specified - using default '${this.config.image.replace('.svg','.css')}'`);
+      console.info(`using default stylesheet '${this.config.image.replace('.svg','.css')}'`);
       style.textContent = '@import url("' + this.config.image.replace('.svg','.css') + '");';
     }
     svgElem.insertBefore(style, svgElem.firstChild);
