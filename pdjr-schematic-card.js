@@ -29,7 +29,7 @@ class ActiveDrawing extends HTMLElement {
               if ((props.updateAttribute) && (props.updateAttribute.name) && (props.updateAttribute.value)) {
                 let attributeValue = props.updateAttribute.value;
                 attributeValue = attributeValue.replace('${state}', this.myHass.states[id]);
-                if (props.currentAttribute != attributeValue) props.currentAttribute =  updateAttribute(props.elements, props.updateAttribute.name, props.updateAttribute.value, this.myHass.states[id].state);
+                if (props.currentAttribute != attributeValue) props.currentAttribute =  updateAttribute(props.elements, props.updateAttribute.name, attributeValue);
               } else {
                 throw new Error(`bad attribute configuration`);
               }
@@ -70,9 +70,9 @@ class ActiveDrawing extends HTMLElement {
         // Apply any initialisations configured for the current element.
         let elems = getElements(svg_doc, ent.elements);
         if ('actions' in group) {
-          if ('set_class' in group.actions) setClass(elems, group.actions.set_class);
-          if ('set_text' in group.actions) setText(elems, group.actions.set_text);
-          if ('set_attribute' in group.actions) setAttribute(elems, group.actions.set_attribute.name, group.actions.set_attribute.value);
+          if ('set_class' in group.actions) updateClass(elems, group.actions.set_class);
+          if ('set_text' in group.actions) updateText(elems, group.actions.set_text);
+          if ('set_attribute' in group.actions) updateAttribute(elems, group.actions.set_attribute.name, group.actions.set_attribute.value);
         }
 
         // Create an entity map with a group configuration array.
