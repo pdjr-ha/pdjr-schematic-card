@@ -18,7 +18,7 @@ An 'attribute' update allows an arbitrary attribute value to be
 assigned to selected elements when the state of a Home Assistant entity
 changes.
 The assigned value can be plain text or a text value that includes the
-current state of the entity. 
+current state of the entity.
 
 ## Example YAML configuration
 ```
