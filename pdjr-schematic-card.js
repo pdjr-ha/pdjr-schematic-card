@@ -106,7 +106,7 @@ class ActiveDrawing extends HTMLElement {
                   const action_config = { entity: ent.entity, tap_action: { action: 'more_info' }};
                   const event = new Event("hass-action", { bubbles: true, composed: true, });
                   event.detail = { config: action_config, action: "tap" };
-                  element.onclick = function() { console.info('C'); document.querySelector('home-assistant').dispatchEvent(event); }
+                  element.onclick = function() { console.info('C'); this.dispatchEvent(event); }
                   break; 
                 default:
                   break;
