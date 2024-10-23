@@ -68,7 +68,7 @@ class ActiveDrawing extends HTMLElement {
           if ('set_class' in group.actions) updateClass(elems, group.actions.set_class);
           if ('set_text' in group.actions) updateText(elems, group.actions.set_text);
           if ('set_attribute' in group.actions) updateAttribute(elems, group.actions.set_attribute.name, group.actions.set_attribute.value);
-
+  
           // Create an entity map with a group configuration array.
           if (!this.entityMap.has(ent.entity)) this.entityMap.set(ent.entity, []);        
           let groupProperties = {
@@ -100,55 +100,18 @@ class ActiveDrawing extends HTMLElement {
           this.entityMap.get(ent.entity).push(groupProperties);
 
           elems.forEach((element) => {
-          if ("tap_action" in group) {
-            switch (group.tap_action) {
-              case 'post':
-                var request_url = service.url;
-                var request_headers = { "Content-type": "application/json" };
-                if (service.authorization) request_headers["Authorization"] = "Bearer " + service.authorization;
-                var request_body = { "entity_id": entity.id };
-                if (service.topic) request_body["topic"] = (service.topic.slice(-1) == "/")?(service.topic + entityId):service.topic; 
-                if (service.message) request_body["message"] = service.message;
-                element.addEventListener('click', () => {
-                  if (service.confirm) {
-                    if (confirm("Toggle " + entity.id + "?")) {
-                      fetch(request_url, {
-                        method: "POST",
-                        headers: request_headers,
-                        body: JSON.stringify(request_body)
-                      });                      }
-                  } else {
-                    fetch(request_url, {
-                      method: "POST",
-                      headers: request_headers,
-                      body: JSON.stringify(request_body)
-                    });
-                  }
-                });
-                break;
-              case 'more_info':
-                const action_config = { entity: ent.entity, tap_action: { action: 'more_info' }};
-                const event = new Event("hass-action", { bubbles: true, composed: true, });
-                event.detail = { config: actionConfig, action: "tap" };
-                document.querySelector('home-assistant').dispatchEvent(event);
-                break; 
-              default:
-                break;
+            if ("tap_action" in group) {
+              switch (group.tap_action) {
+                case 'more_info':
+                  const action_config = { entity: ent.entity, tap_action: { action: 'more_info' }};
+                  const event = new Event("hass-action", { bubbles: true, composed: true, });
+                  event.detail = { config: action_config, action: "tap" };
+                  document.querySelector('home-assistant').dispatchEvent(event);
+                  break; 
+                default:
+                  break;
+              }
             }
-          } else {
-            // Click event for mouse
-            element.addEventListener('click', (e) => {
-              event = new Event('hass-more-info');
-              event.detail = { 'entityId': ent.entity };
-              document.querySelector('home-assistant').dispatchEvent(event);
-            });
-            // Touch event for touchscreens
-            element.addEventListener('touchend', (e) => {
-              event = new Event('hass-more-info');
-              event.detail = { 'entityId': ent.entity };
-              document.querySelector('home-assistant').dispatchEvent(event);
-            });
-          }
           });
 
         });
