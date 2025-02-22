@@ -1,8 +1,8 @@
 # pdjr-schematic-card
 
 **pdjr-schematic-card** is a Lovelace card for Home Assistant which
-dynamically updates SVG images in response to state changes on Home
-Assistant entities.
+dynamically updates SVG images on first load and/or in response to
+state changes on Home Assistant entities.
 
 The plugin supports three types of update.
 
