@@ -8,38 +8,46 @@ class ActiveDrawing extends HTMLElement {
   updateStates() {
     const svg_doc = this.image.getSVGDocument();
 
-    if ((svg_doc) && (this.myHass)) {
-      if (this.entityMap) this.entityMap.forEach((groupPropertiesArray, entityId) => {
-        groupPropertiesArray.forEach((groupProperties) => {
-          try {
-            if ((this.myHass.states[entityId].state) && (groupProperties.currentState != this.myHass.states[entityId].state)) {
-
-              if (groupProperties.updateClass) {
-                let cl = groupProperties.updateClass.get(this.myHass.states[entityId].state);
-                if (groupProperties.currentClass != cl) groupProperties.currentClass = updateClass(groupProperties.elements, cl, groupProperties.currentClass);
+    if ((svg_doc) && (this.myHass) && (this.entityMap)) {
+    this.entityMap.forEach((entityConfiguration, entityId) => {
+      try {
+        if (!(this.myHass.states[entityId])) { this.entityMap.delete(entityId); throw new Error(`entity ${entityId} does not exist`); }
+        if ((entityConfiguration.state != this.myHass.states[entityId].state)) {
+          if (this.config.debug) console.log(`processing state change on ${entityId} (from ${entityConfiguration.state} to ${this.myHass.states[entityId].state})`);
+          entityConfiguration.state = this.myHass.states[entityId].state;
+          entityConfiguration.groups.forEach((group) => {
+            if (group.classMap) {
+              let add = group.classMap.get(entityConfiguration.state);
+              if (group.currentClass != add) {
+                if (this.config.debug) console.log(`-- class update: removing ${group.currentClass}, adding ${add} to ${group.elements.length} elements`);
+		            group.currentClass = updateClass(group.elements, add, group.currentClass);
               }
-
-              if (groupProperties.updateText) {
-                let text = groupProperties.updateText;
-                text = text.replace('${state}', this.myHass.states[entityId].state);
-                text = text.replace('${uom}', this.myHass.states[entityId].attributes.unit_of_measurement);
-                if (groupProperties.currentText != text) groupProperties.currentText = updateText(groupProperties.elements, text);
-              }
-
-              if (groupProperties.updateAttribute) {
-                if ((groupProperties.updateAttribute.name) && (groupProperties.updateAttribute.value)) {
-                  let attributeValue = groupProperties.updateAttribute.value;
-                  attributeValue = attributeValue.replace('${state}', this.myHass.states[entityId].state);
-                  if (groupProperties.currentAttribute != attributeValue) groupProperties.currentAttribute =  updateAttribute(groupProperties.elements, groupProperties.updateAttribute.name, attributeValue);
-                } else {
-                  throw new Error(`'update_attribute' configuration missing 'name' and 'value' properties`);
-                }
-              }
-              groupProperties.currentState = this.myHass.states[entityId].state;
             }
-          } catch(e) { }
-        });
-      });
+
+            if (group.text) {
+              let text = group.text;
+              text = text.replace('${state}', this.myHass.states[entityId].state);
+              text = text.replace('${uom}', this.myHass.states[entityId].attributes.unit_of_measurement);
+              if (group.currentText != text) {
+                if (this.config.debug) console.log(`-- text update: adding '${text}' to ${group.elements.length} elements`);
+		            group.currentText = updateText(group.elements, text);
+              }
+            }
+
+            if ((group.attribute) && (group.attribute.name) && (group.attribute.value)) {
+              let attribute = group.attribute.value;
+              attribute = attribute.replace('${state}', this.myHass.states[entityId].state);
+              if (group.currentAttribute != attribute) {
+                if (this.config.debug) console.log(`-- attribute update: assigning '${attribute}' to '${group.attribute.name}' to ${group.elements.length} elements`);
+                group.currentAttribute =  updateAttribute(group.elements, group.attribute.name, attribute);
+              }
+            }
+          });
+        }
+      } catch(e) {
+        console.log(`warning: ${e.message}`);
+      }
+    });
     }
   }
 
@@ -55,71 +63,63 @@ class ActiveDrawing extends HTMLElement {
     style.textContent = styleSheet;
     svgElem.insertBefore(style, svgElem.firstChild);
 
+    // Process static configuration
+    if ('initialisation' in this.config) {
+      this.config.initialisation.forEach((initialisation) => {
+        if ('elements' in initialisation) {
+          let elems = getElements(svg_doc, initialisation.elements);
+          if ('tap_action' in initialisation) updateTapAction(elems, 'tap_action', { url: initialisation.tap_action.url });
+          if ('double_tap_action' in initialisation) updateTapAction(elems, 'double_tap_action', { url: initialisation.double_tap_action.url });
+          if ('class' in initialisation) updateClass(elems, initialisation['class']);
+          if ('text' in initialisation) updateText(elems, initialisation['text']);
+          if (('attribute' in initialisation) && ('name' in initialisation.attribute) && ('value' in initialisation.attribute)) {
+            updateAttribute(elems, initialisation.attribute.name, initialisation.attribute.value);
+          }
+        }
+      });
+    }
+
     // Create entityMap, a dictionary for every configured Hass entity
     // which maps entity.id => entity configuration.
     this.entityMap = new Map();
     // Iterate over every configured group
-    this.config.groups.filter((group) => !(group.disabled && (group.disabled === true))).forEach((group) => {
-      if (('entities' in group) && ('actions' in group)) {
-        // Iterate over every configured entity
-        group.entities.forEach((ent) => {
-          // Apply any initialisations configured for the current element.
-          let elems = getElements(svg_doc, ent.elements);
-          if ('set_class' in group.actions) updateClass(elems, group.actions.set_class);
-          if ('set_text' in group.actions) updateText(elems, group.actions.set_text);
-          if ('set_attribute' in group.actions) updateAttribute(elems, group.actions.set_attribute.name, group.actions.set_attribute.value);
-  
-          // Create an entity map with a group configuration array.
-          if (!this.entityMap.has(ent.entity)) this.entityMap.set(ent.entity, []);        
-          let groupProperties = {
-            group: group.name,
-            elements: elems,
-            currentState: undefined,
+    this.config.updates.filter((update) => !(update.disabled && (update.disabled === true))).forEach((update) => {
+      if ('entities' in update) {
+        update.entities.forEach((entity) => {
+          // If entity is not on the entity map then create a new map entry with an empty group configuration array.
+          if (!this.entityMap.has(entity.entity)) {
+            let entityMapValue = { state: 'unknown', groups: [] };
+            this.entityMap.set(entity.entity, entityMapValue);        
+          }
+
+          let group = {
+            elements: getElements(svg_doc, entity.elements),
+            classMap: undefined,
             currentClass: undefined,
+            text: undefined,
             currentText: undefined,
+            attribute: undefined,
             currentAttribute: undefined,
-            updateClass: undefined,
-            updateText: undefined,
-            updateAttribute: undefined
+            tapAction: undefined
           };
 
-          if ('update_class' in group.actions) {
-            var classMap = new Map();
-            group.actions.update_class.forEach((state) => { classMap.set(state.state, state.class); });
-            groupProperties.updateClass = classMap;
+          if ('class' in update) {
+            group.classMap = new Map();
+            update.class.forEach((state) => { group.classMap.set(state.state, state['class']); });
           }
 
-          if ('update_text' in group.actions) {
-            groupProperties.updateText = group.actions.update_text
+          if ('text' in update) {
+            group.text = update.text;
           }
 
-          if ('update_attribute' in group.actions) {
-            groupProperties.updateAttribute = group.actions.update_attribute;
+          if ('attribute' in update) {
+            group.attribute = { name: update.attribute.name, value: update.attribute.value };
           }
 
-          this.entityMap.get(ent.entity).push(groupProperties);
-
-          elems.forEach((element) => {
-            if ("tap_action" in group) {
-              switch (group.tap_action) {
-                case 'more_info':
-                  const action_config = { entity: ent.entity, tap_action: { action: 'more_info' }};
-                  const event = new Event("hass-action", { bubbles: true, composed: true, });
-                  event.detail = { config: action_config, action: "tap" };
-                  element.onclick = function() { console.info('C'); this.dispatchEvent(event); }
-                  break; 
-                default:
-                  break;
-              }
-            }
-          });
-
+          this.entityMap.get(entity.entity).groups.push(group);
         });
-      } else {
-        console.error(`bad configuration: missing 'action' and/or 'entities' property in group '${group.name}'`);
       }
     });
-
     this.updateStates();
   }
 
@@ -246,3 +246,22 @@ function updateAttribute(elements, attributeName, attributeValue) {
   }
   return(retval);
 }
+
+function updateTapAction(elements, type, params) {
+  if ((elements.length > 0) && (type !== undefined)) {
+    elements.forEach((element) => {
+      switch (type) {
+        case 'tap_action':
+          element.onclick = function() { fetch(params.url, { method: 'POST' }); };
+          break;
+        case 'double_tap_action':
+          element.onhold = function() { fetch(params.url, { method: 'POST' }); };
+          break;
+        default:
+          break;
+      }
+    });
+  }
+}
+
+
