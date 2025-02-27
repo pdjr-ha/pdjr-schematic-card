@@ -85,7 +85,7 @@ class ActiveDrawing extends HTMLElement {
           let elems = getElements(svg_doc, initialisation.elements);
           if (elems.length == 0) throw new Error(`'elements' selector '${initialisation.elements}' matches zero SVG elements`);
 
-          if (('attribute' in initialisation) {
+          if ('attribute' in initialisation) {
             if (!(('name' in initialisation.attribute) && ('value' in initialisation.attribute))) throw new Error(`'attribute' clause missing required 'name' or 'value' properties`);
             updateAttribute(elems, initialisation.attribute.name, initialisation.attribute.value);
           }
