@@ -5,49 +5,59 @@ class ActiveDrawing extends HTMLElement {
     this.attachShadow({ mode: 'open' });
   }
 
+  /**
+   * Handler for HASS updates.
+   */
   updateStates() {
     const svg_doc = this.image.getSVGDocument();
 
+    // Globals required for update processing that may not be available
+    // until document is fully loaded.
     if ((svg_doc) && (this.myHass) && (this.entityMap)) {
-    this.entityMap.forEach((entityConfiguration, entityId) => {
-      try {
-        if (!(this.myHass.states[entityId])) { this.entityMap.delete(entityId); throw new Error(`entity ${entityId} does not exist`); }
-        if ((entityConfiguration.state != this.myHass.states[entityId].state)) {
-          if (this.config.debug) console.log(`processing state change on ${entityId} (from ${entityConfiguration.state} to ${this.myHass.states[entityId].state})`);
-          entityConfiguration.state = this.myHass.states[entityId].state;
-          entityConfiguration.groups.forEach((group) => {
-            if (group.classMap) {
-              let add = group.classMap.get(entityConfiguration.state);
-              if (group.currentClass != add) {
-                if (this.config.debug) console.log(`-- class update: removing ${group.currentClass}, adding ${add} to ${group.elements.length} elements`);
-		            group.currentClass = updateClass(group.elements, add, group.currentClass);
-              }
-            }
 
-            if (group.text) {
-              let text = group.text;
-              text = text.replace('${state}', this.myHass.states[entityId].state);
-              text = text.replace('${uom}', this.myHass.states[entityId].attributes.unit_of_measurement);
-              if (group.currentText != text) {
-                if (this.config.debug) console.log(`-- text update: adding '${text}' to ${group.elements.length} elements`);
-		            group.currentText = updateText(group.elements, text);
-              }
-            }
+      this.entityMap.forEach((entityConfiguration, entityId) => {
+        try {
+          if (!(this.myHass.states[entityId])) { this.entityMap.delete(entityId); throw new Error(`entity ${entityId} does not exist`); }
 
-            if ((group.attribute) && (group.attribute.name) && (group.attribute.value)) {
-              let attribute = group.attribute.value;
-              attribute = attribute.replace('${state}', this.myHass.states[entityId].state);
-              if (group.currentAttribute != attribute) {
-                if (this.config.debug) console.log(`-- attribute update: assigning '${attribute}' to '${group.attribute.name}' to ${group.elements.length} elements`);
-                group.currentAttribute =  updateAttribute(group.elements, group.attribute.name, attribute);
+          if ((entityConfiguration.state != this.myHass.states[entityId].state)) {
+            if (this.config.debug) console.log(`processing state change on ${entityId} (from ${entityConfiguration.state} to ${this.myHass.states[entityId].state})`);
+            entityConfiguration.state = this.myHass.states[entityId].state;
+            entityConfiguration.groups.forEach((group) => {
+
+              if (group.classMap) {
+                let add = group.classMap.get(entityConfiguration.state);
+                if (group.currentClass != add) {
+                  if (this.config.debug) console.log(`-- class update: removing ${group.currentClass}, adding ${add} to ${group.elements.length} elements`);
+		              group.currentClass = updateClass(group.elements, add, group.currentClass);
+                }
               }
-            }
-          });
+
+              if (group.text) {
+                let text = group.text;
+                text = text.replace('${state}', this.myHass.states[entityId].state);
+                text = text.replace('${uom}', this.myHass.states[entityId].attributes.unit_of_measurement);
+                if (group.currentText != text) {
+                  if (this.config.debug) console.log(`-- text update: adding '${text}' to ${group.elements.length} elements`);
+		              group.currentText = updateText(group.elements, text);
+                }
+              }
+
+              if ((group.attribute) && (group.attribute.name) && (group.attribute.value)) {
+                let attribute = group.attribute.value;
+                attribute = attribute.replace('${state}', this.myHass.states[entityId].state);
+                if (group.currentAttribute != attribute) {
+                  if (this.config.debug) console.log(`-- attribute update: assigning '${attribute}' to '${group.attribute.name}' to ${group.elements.length} elements`);
+                  group.currentAttribute =  updateAttribute(group.elements, group.attribute.name, attribute);
+                }
+              }
+
+            });
+          }
+        } catch(e) {
+          console.log(`warning: ${e.message}`);
         }
-      } catch(e) {
-        console.log(`warning: ${e.message}`);
-      }
-    });
+      });
+
     }
   }
 
@@ -63,18 +73,40 @@ class ActiveDrawing extends HTMLElement {
     style.textContent = styleSheet;
     svgElem.insertBefore(style, svgElem.firstChild);
 
-    // Process static configuration
+    // Process 'initialisation' block which has the form:
+    // initialisation:
+    //   -- elements: "DOM selector string"
+    //      
     if ('initialisation' in this.config) {
       this.config.initialisation.forEach((initialisation) => {
-        if ('elements' in initialisation) {
+        try {
+          if (!('elements' in initialisation)) throw new Error(`missing 'elements' property in initialisation block`);
+
           let elems = getElements(svg_doc, initialisation.elements);
-          if ('tap_action' in initialisation) updateTapAction(elems, 'tap_action', { url: initialisation.tap_action.url });
-          if ('double_tap_action' in initialisation) updateTapAction(elems, 'double_tap_action', { url: initialisation.double_tap_action.url });
-          if ('class' in initialisation) updateClass(elems, initialisation['class']);
-          if ('text' in initialisation) updateText(elems, initialisation['text']);
-          if (('attribute' in initialisation) && ('name' in initialisation.attribute) && ('value' in initialisation.attribute)) {
+          if (elems.length == 0) throw new Error(`'elements' selector '${initialisation.elements}' matches zero SVG elements`);
+
+          if ('attribute' in initialisation) {
+            if (!(('name' in initialisation.attribute) && ('value' in initialisation.attribute))) throw new Error(`'attribute' clause missing required 'name' or 'value' properties`);
             updateAttribute(elems, initialisation.attribute.name, initialisation.attribute.value);
           }
+
+          if ('class' in initialisation) {
+            updateClass(elems, initialisation['class']);
+          }
+
+          if ('tap_action' in initialisation) {
+            if ('webhook' in initialisation.tap_action) {
+              updateTapAction(elems, 'POST', initialisation.tap_action.webhook);
+            } else {
+              throw new Error(`'tap_action' clause missing valid protocol ('webhook')`);
+            }
+          }
+
+          if ('text' in initialisation) {
+            updateText(elems, initialisation['text']);
+          }
+        } catch(e) {
+          console.log(`error in initialisation section: ${e.message}`)
         }
       });
     }
@@ -247,15 +279,12 @@ function updateAttribute(elements, attributeName, attributeValue) {
   return(retval);
 }
 
-function updateTapAction(elements, type, params) {
-  if ((elements.length > 0) && (type !== undefined)) {
+function updateTapAction(elements, method, url, body='') {
+  if (elements.length > 0) {
     elements.forEach((element) => {
-      switch (type) {
-        case 'tap_action':
-          element.onclick = function() { fetch(params.url, { method: 'POST' }); };
-          break;
-        case 'double_tap_action':
-          element.onhold = function() { fetch(params.url, { method: 'POST' }); };
+      switch (method) {
+        case 'POST':
+          element.onclick = function() { fetch(url, { method: method }); };
           break;
         default:
           break;
@@ -263,5 +292,4 @@ function updateTapAction(elements, type, params) {
     });
   }
 }
-
 
